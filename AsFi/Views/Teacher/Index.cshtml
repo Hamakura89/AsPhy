@@ -24,6 +24,8 @@
                     <div class="teacher-nav-tabs">
                         <button class="teacher-nav-tab active" data-section="lectures"><i class="bi bi-journal-bookmark"></i> Лекции</button>
                         <button class="teacher-nav-tab" data-section="tests"><i class="bi bi-journal-text"></i> Тесты</button>
+                        <!-- На мобильных кнопка "Кодовые слова" появляется в навигации -->
+                        <button type="button" class="teacher-nav-tab d-md-none" data-bs-toggle="modal" data-bs-target="#generateCodeModal"><i class="bi bi-key"></i> Кодовые слова</button>
                     </div>
                 </div>
                 <div class="header-right">
@@ -38,7 +40,7 @@
                         </div>
                         <span id="userName">Загрузка...</span>
                     </div>
-                    <button type="button" class="teacher-btn-purple" data-bs-toggle="modal" data-bs-target="#generateCodeModal"><i class="bi bi-key"></i> Кодовые слова</button>
+                    <button type="button" class="teacher-btn-purple d-none d-md-block" data-bs-toggle="modal" data-bs-target="#generateCodeModal"><i class="bi bi-key"></i> Кодовые слова</button>
                     <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                         <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i> Выйти</button>
                     </form>
@@ -48,6 +50,8 @@
     </header>
 
     <main class="main-content">
+
+        
         <div class="container-fluid">
             <div class="row">
                 
@@ -85,6 +89,11 @@
                     </div>
                 </div>
 
+                <div class="filter-toggle-container d-md-none">
+                    <button class="btn btn-outline-light filter-toggle-btn" type="button">
+                        <i class="bi bi-funnel"></i> Фильтры
+                    </button>
+                </div>
                 
                 <div class="col-lg-9 col-md-8">
                     <div class="d-flex justify-content-end mb-4">
@@ -471,6 +480,14 @@
                 }
             });
         }
+
+                 document.querySelector('.filter-toggle-btn')?.addEventListener('click', function() {
+            const currentFilter = document.querySelector('.filter-section.active');
+            if (currentFilter) {
+                currentFilter.classList.toggle('mobile-open');
+            }
+        });
+
 
         function getSubjectName(id) { const s = subjects.find(s => s.id == id); return s ? s.name : '?'; }
         function getSectionName(id) { const s = sections.find(s => s.id == id); return s ? s.name : '?'; }

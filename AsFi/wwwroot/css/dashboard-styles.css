@@ -2900,3 +2900,398 @@ body {
     padding: 10px 25px;
     font-size: 16px;
 }
+
+@media (max-width: 768px) {
+    .teacher-nav-tab, .nav-tab {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
+
+    .teacher-header .header-top, .main-header .header-top {
+        padding: 8px 0;
+    }
+
+    .header-container {
+        gap: 10px;
+        padding: 0 15px;
+    }
+
+    .logo-img {
+        height: 30px;
+    }
+
+    .search-container {
+        min-width: auto;
+        order: 2;
+        width: 100%;
+        margin: 5px 0;
+    }
+
+    .header-right {
+        gap: 10px;
+    }
+
+    .btn-join-group, .btn-logout, .home-btn, .teacher-btn-purple, .teacher-btn-success, .teacher-btn-danger {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
+
+/* Адаптация редактора лекций для мобильных */
+.editor-content {
+    width: 100%;
+    overflow-x: auto;
+    white-space: normal;
+    word-wrap: break-word;
+    font-size: 14px;
+    padding: 10px;
+}
+
+    .editor-content table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .editor-content img {
+        max-width: 100%;
+        height: auto;
+    }
+/* Текстовое поле ввода (если используется contenteditable) */
+.lecture-content-text,
+.editor-content {
+    min-height: 300px;
+    font-size: 16px;
+}
+
+@media (max-width: 768px) {
+    .editor-content {
+        min-height: 250px;
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .question-text-area, .form-control {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    .questions-sidebar {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* ========== АДАПТАЦИЯ ПОД МОБИЛЬНЫЕ УСТРОЙСТВА ========== */
+@media (max-width: 768px) {
+    /* Уменьшаем отступы и размеры шапки */
+    body {
+        padding-top: 100px; /* Уменьшаем отступ, так как шапка стала компактнее */
+    }
+
+    .teacher-header .header-top,
+    .main-header .header-top {
+        padding: 8px 0;
+    }
+
+    .header-container {
+        flex-direction: column;
+        gap: 8px;
+        padding: 0 12px;
+    }
+
+    .logo-nav-container {
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .logo-img {
+        height: 32px;
+    }
+
+    .teacher-nav-tabs, .nav-tabs {
+        gap: 3px;
+        padding: 2px;
+    }
+
+    .teacher-nav-tab, .nav-tab {
+        padding: 6px 12px !important;
+        font-size: 13px !important;
+    }
+    /* Поисковая строка */
+    .search-container {
+        width: 100%;
+        order: 1;
+        margin: 5px 0;
+    }
+
+    .teacher-search-input, .search-input {
+        padding: 8px 35px 8px 12px;
+        font-size: 13px;
+    }
+    /* Правая часть шапки — группируем в две строки */
+    .header-right {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .teacher-user-info, .user-info {
+        order: 0;
+        padding: 4px 12px;
+        font-size: 13px;
+    }
+
+    .teacher-btn-purple, .btn-logout, .home-btn, .btn-join-group {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    /* Кнопка "Кодовые слова" и "Выйти" — в одну строку справа */
+    .header-right form {
+        margin-left: auto;
+    }
+    /* Фильтры: кнопка-переключатель */
+    .filter-toggle-container {
+        text-align: right;
+        margin-bottom: 15px;
+    }
+
+    .filter-toggle-btn {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        color: var(--glass-text);
+        padding: 6px 16px;
+        border-radius: 30px;
+        font-size: 13px;
+    }
+
+        .filter-toggle-btn i {
+            margin-right: 6px;
+        }
+    /* По умолчанию на мобильных фильтры скрыты, показываются при активном классе */
+    .filter-section {
+        display: none !important;
+    }
+
+        .filter-section.active {
+            display: block !important;
+        }
+    /* Левая колонка с фильтрами – на мобильных занимает всю ширину */
+    .col-lg-3, .col-md-4 {
+        width: 100%;
+    }
+    /* Основная колонка – полная ширина */
+    .col-lg-9, .col-md-8 {
+        width: 100%;
+    }
+    /* Карточки вопросов и лекций на мобильных – меньшие отступы */
+    .question-card, .lecture-item, .test-item {
+        padding: 12px;
+    }
+
+    .question-title {
+        font-size: 1rem;
+    }
+
+    .points-editor {
+        padding: 3px 8px;
+    }
+
+        .points-editor input {
+            width: 50px;
+            font-size: 12px;
+        }
+
+    .answer-option-row .d-flex {
+        flex-wrap: wrap;
+    }
+
+    .answer-text {
+        min-width: 120px;
+    }
+    /* Таблицы в лекциях и результатах – горизонтальная прокрутка */
+    .lecture-content-text,
+    .editor-content {
+        overflow-x: auto;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+        .lecture-content-text table,
+        .editor-content table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+    .editor-content {
+        min-height: 200px;
+        font-size: 14px;
+        padding: 8px;
+    }
+    /* Модальные окна на мобильных – почти на весь экран */
+    .modal-dialog {
+        margin: 10px;
+    }
+
+    .modal-body {
+        padding: 15px;
+    }
+    /* Боковая панель навигации по вопросам (для EditTest) */
+    .questions-sidebar {
+        max-height: 250px;
+        overflow-y: auto;
+        margin-bottom: 15px;
+    }
+    /* Кнопки действий (сохранить, добавить вопрос) в нижней панели */
+    .fixed-bottom-bar {
+        padding: 10px 15px;
+    }
+
+        .fixed-bottom-bar .teacher-btn-purple,
+        .fixed-bottom-bar .teacher-btn-success {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+    /* Кнопки "Назад к тестам" и т.п. */
+    .home-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    /* Простые текстовые поля */
+    .form-control, .question-text-area {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+    /* Убираем фиксированное позиционирование нижней панели (если мешает) */
+    .fixed-bottom-bar {
+        position: relative;
+        margin-top: 20px;
+    }
+
+    body {
+        padding-bottom: 0;
+    }
+    /* Адаптация страницы профиля */
+    .color-picker {
+        width: 35px;
+        height: 35px;
+    }
+}
+
+/* ========== МОБИЛЬНАЯ АДАПТАЦИЯ (ФИНАЛЬНЫЕ ПРАВКИ) ========== */
+@media (max-width: 768px) {
+    /* Компактное верхнее меню */
+    .header-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 0 10px;
+    }
+
+    .logo-nav-container {
+        justify-content: space-between;
+    }
+
+    .teacher-nav-tabs {
+        justify-content: center;
+    }
+
+    .teacher-nav-tab, .nav-tab {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+    }
+
+    .search-container {
+        width: 100%;
+        margin: 5px 0;
+    }
+
+    .teacher-search-input {
+        padding: 6px 30px 6px 10px;
+        font-size: 12px;
+    }
+
+    .header-right {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .teacher-user-info {
+        order: 0;
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+
+    .teacher-btn-purple {
+        order: 1;
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    .btn-logout {
+        order: 2;
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    /* Кнопка фильтров */
+    .filter-toggle-container {
+        text-align: right;
+        margin-bottom: 15px;
+    }
+
+    .filter-toggle-btn {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        color: var(--glass-text);
+        padding: 5px 14px;
+        border-radius: 30px;
+        font-size: 12px;
+    }
+
+    /* Фильтры: по умолчанию скрыты, открываются по кнопке */
+    .filter-section {
+        display: none !important;
+    }
+
+        .filter-section.active {
+            display: none !important; /* даже активный фильтр скрыт */
+        }
+
+            .filter-section.active.mobile-open {
+                display: block !important;
+            }
+
+    /* Отмена фиксированной нижней панели, чтобы не занимала место */
+    .fixed-bottom-bar {
+        position: relative;
+        margin-top: 20px;
+        padding: 10px;
+    }
+
+    body {
+        padding-bottom: 0;
+    }
+}
+/* Фильтры на мобильных: скрыты по умолчанию, показываются только при активном классе mobile-open */
+@media (max-width: 768px) {
+    .filter-section.active {
+        display: none !important;
+    }
+
+        .filter-section.active.mobile-open {
+            display: block !important;
+        }
+}

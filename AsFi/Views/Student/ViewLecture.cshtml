@@ -25,39 +25,22 @@
                 <div class="logo-nav-container">
                     <img src="/images/logo.png" alt="AsFi" class="logo-img" onerror="this.style.display='none';">
                     <div class="nav-tabs">
-                        <button class="nav-tab" onclick="window.location.href='/Student/Index'">
-                            <i class="bi bi-journal-bookmark"></i> Лекции
-                        </button>
-                        <button class="nav-tab" onclick="window.location.href='/Student/Index?tab=tests'">
-                            <i class="bi bi-journal-text"></i> Тесты
-                        </button>
-                        <button class="nav-tab" onclick="window.location.href='/Student/TestResults'">
-                            <i class="bi bi-award"></i> Оценки
-                        </button>
+                        <button class="nav-tab" onclick="window.location.href='/Student/Index'"><i class="bi bi-journal-bookmark"></i> Лекции</button>
+                        <button class="nav-tab" onclick="window.location.href='/Student/Index?tab=tests'"><i class="bi bi-journal-text"></i> Тесты</button>
+                        <button class="nav-tab" onclick="window.location.href='/Student/TestResults'"><i class="bi bi-award"></i> Оценки</button>
                     </div>
                 </div>
 
-                <div class="search-container">
-                    <input type="text" class="search-input" placeholder="Поиск по названию..." id="searchInput">
-                    <i class="bi bi-search search-icon"></i>
-                </div>
+                <!-- Поиск убираем совсем (на странице лекции он не нужен) -->
 
                 <div class="header-right">
                     <div class="user-info" id="userInfo" style="cursor:pointer" onclick="window.location.href='/Student/Profile'">
-                        <div id="userAvatarContainer" style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px;">
-                            <i class="bi bi-person-circle user-icon" id="defaultUserIcon"></i>
-                            <img id="userAvatarImg" style="display:none; width:20px; height:20px; border-radius:50%; object-fit:cover;" />
-                        </div>
+                        <div><i class="bi bi-person-circle user-icon" id="defaultUserIcon"></i><img id="userAvatarImg" style="display:none; width:20px; height:20px; border-radius:50%;" /></div>
                         <span id="userName">Загрузка...</span>
                     </div>
-
                     <div id="groupStatusArea"></div>
-
-                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                        <button type="submit" class="btn-logout">
-                            <i class="bi bi-box-arrow-right"></i> Выйти
-                        </button>
-                    </form>
+                    <!-- Вместо кнопки выхода — кнопка "На главную" -->
+                    <a href="/Student/Index" class="home-btn"><i class="bi bi-house-door"></i> На главную</a>
                 </div>
             </div>
         </div>
