@@ -1,0 +1,162 @@
+﻿@model AsFi.Models.TestAttemptResult
+@{
+    ViewData["Title"] = "Результат теста";
+    var percent = Model.TotalPossiblePoints > 0 ? (Model.EarnedPoints / Model.TotalPossiblePoints) * 100 : 0;
+    var gradeClass = Model.Grade >= 8 ? "grade-excellent" : (Model.Grade >= 6 ? "grade-good" : (Model.Grade >= 4 ? "grade-satisfactory" : "grade-poor"));
+    
+    var selectedAnswers = Model.StudentAnswers.ToDictionary(sa => sa.QuestionId, sa => sa.AnswerOptionId);
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/dashboard-styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/lecture-view.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+
+    <header class="main-header">
+        <div class="header-top">
+            <div class="header-container">
+                <div class="logo-nav-container">
+                    <img src="/images/logo.png" alt="AsFi" class="logo-img" onerror="this.style.display='none';">
+                    <div class="nav-tabs">
+                        <button class="nav-tab" onclick="window.location.href='/Student/Index'"><i class="bi bi-journal-bookmark"></i> Лекции</button>
+                        <button class="nav-tab" onclick="window.location.href='/Student/Index?tab=tests'"><i class="bi bi-journal-text"></i> Тесты</button>
+                        <button class="nav-tab" onclick="window.location.href='/Student/TestResults'"><i class="bi bi-award"></i> Оценки</button>
+                    </div>
+                </div>
+                <div class="search-container"><input type="text" class="search-input" placeholder="Поиск..." id="searchInput"><i class="bi bi-search search-icon"></i></div>
+                <div class="header-right">
+                    <div class="user-info" id="userInfo" style="cursor:pointer" onclick="window.location.href='/Student/Profile'">
+                        <div><i class="bi bi-person-circle user-icon" id="defaultUserIcon"></i><img id="userAvatarImg" style="display:none; width:20px; height:20px; border-radius:50%;" /></div>
+                        <span id="userName">Загрузка...</span>
+                    </div>
+                    <div id="groupStatusArea"></div>
+                    <form asp-controller="Account" asp-action="Logout" method="post"><button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i> Выйти</button></form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="teacher-card mb-4">
+                <div class="teacher-card-body">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <h1 class="text-white mb-2">Результат: @Model.Test.Title</h1>
+                        <div class="grade-badge @gradeClass" style="font-size:1.5rem; padding:10px 25px;">@Model.Grade / 10</div>
+                    </div>
+                    <div class="d-flex gap-3 mt-3">
+                        <span class="test-info-badge"><i class="bi bi-star"></i> @Model.EarnedPoints / @Model.TotalPossiblePoints баллов</span>
+                        <span class="test-info-badge"><i class="bi bi-percent"></i> @percent.ToString("0.0")%</span>
+                        @if (Model.Test.Topic != null)
+                        {
+                            <span class="test-info-badge"><i class="bi bi-tag"></i> Тема: @Model.Test.Topic.Name</span>
+                            if (Model.Test.Topic.Subject != null)
+                            {
+                                <span class="test-info-badge"><i class="bi bi-book"></i> Предмет: @Model.Test.Topic.Subject.Name</span>
+                            }
+                        }
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle"></i> @Model.Explanation
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-white mb-3"><i class="bi bi-question-circle"></i> Детали ответов</h3>
+            @foreach (var question in Model.Test.TestQuestions.OrderBy(q => q.Id))
+            {
+                var selectedOptId = selectedAnswers.ContainsKey(question.Id) ? selectedAnswers[question.Id] : (int?)null;
+                <div class="question-card mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-white">Вопрос @(Array.IndexOf(Model.Test.TestQuestions.ToArray(), question) + 1)</h5>
+                        <span class="badge bg-info">@question.Points баллов</span>
+                    </div>
+                    <p class="text-white mb-3">@question.QuestionText</p>
+                    @if (!string.IsNullOrEmpty(question.ImageUrl))
+                    {
+                        <img src="@question.ImageUrl" class="question-image mb-3" />
+                    }
+                    <div class="answers-list">
+                        @foreach (var opt in question.AnswerOptions)
+                        {
+                            bool isCorrect = opt.IsCorrect;
+                            bool isSelected = (selectedOptId == opt.Id);
+                            string optionClass = "answer-option";
+                            if (isSelected && isCorrect) optionClass += " student-selected correct";
+                            else if (isSelected && !isCorrect) optionClass += " student-selected incorrect";
+                            else if (isCorrect) optionClass += " correct";
+
+                            <div class="@optionClass">
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (isSelected)
+                                    {
+                                        <i class="bi bi-check-circle-fill text-primary"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-circle text-muted"></i>
+                                    }
+                                    @if (!string.IsNullOrEmpty(opt.ImageUrl))
+                                    {
+                                        <img src="@opt.ImageUrl" style="max-width:40px; max-height:40px; border-radius:4px;" />
+                                    }
+                                    <span class="text-white">@(opt.Text ?? "Ответ")</span>
+                                    @if (isCorrect)
+                                    {
+                                        <span class="badge bg-success ms-2">Правильный</span>
+                                    }
+                                    @if (isSelected && !isCorrect)
+                                    {
+                                        <span class="badge bg-danger ms-2">Ваш ответ</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            <div class="text-center mt-4">
+                <a href="/Student/TestResults" class="btn btn-primary"><i class="bi bi-list"></i> Все результаты</a>
+                <a href="/Student/Index" class="btn btn-secondary ms-2"><i class="bi bi-house"></i> На главную</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function loadCurrentUser() {
+            const res = await fetch('/Student/GetCurrentUser');
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('userName').innerText = `${data.lastName} ${data.firstName}`;
+                if (data.avatarUrl) {
+                    document.getElementById('defaultUserIcon').style.display = 'none';
+                    document.getElementById('userAvatarImg').src = data.avatarUrl;
+                    document.getElementById('userAvatarImg').style.display = 'inline-block';
+                }
+            }
+        }
+        async function loadUserGroup() {
+            const res = await fetch('/Student/GetUserGroup');
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('groupStatusArea').innerHTML = `<div class="user-info" style="background:rgba(123,74,227,0.2);"><i class="bi bi-people-fill"></i><span>${escapeHtml(data.groupName)}</span></div>`;
+            } else {
+                document.getElementById('groupStatusArea').innerHTML = `<button class="btn-join-group" data-bs-toggle="modal" data-bs-target="#joinGroupModal"><i class="bi bi-people"></i> Вступить в группу</button>`;
+            }
+        }
+        function escapeHtml(s) { return s?.replace(/[&<>]/g, m => m == '&' ? '&amp;' : m == '<' ? '&lt;' : '&gt;') || ''; }
+        document.addEventListener('DOMContentLoaded', () => { loadCurrentUser(); loadUserGroup(); });
+    </script>
+</body>
+</html>

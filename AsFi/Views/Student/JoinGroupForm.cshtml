@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Вступить в группу";
+}
+<div class="container mt-4">
+    <h1>Вступить в группу</h1>
+    <form id="joinForm">
+        <div class="mb-3">
+            <label class="form-label">Кодовое слово</label>
+            <input type="text" class="form-control" id="inviteCode" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Вступить</button>
+        <a href="/Student" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+<script>
+    document.getElementById('joinForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const code = document.getElementById('inviteCode').value;
+        const response = await fetch('/Student/JoinGroup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ inviteCode: code })
+        });
+        const result = await response.json();
+        if (result.success) {
+            alert(result.message);
+            window.location.href = '/Student';
+        } else {
+            alert(result.message);
+        }
+    });
+</script>

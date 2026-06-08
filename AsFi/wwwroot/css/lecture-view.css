@@ -1,0 +1,285 @@
+﻿
+/* Видео на всю ширину */
+.video-full-width {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    margin-bottom: 30px;
+}
+
+    .video-full-width iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 16px;
+    }
+
+/* Карточка презентации */
+.presentation-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    border: 1px solid var(--glass-border);
+    transition: all 0.3s ease;
+}
+
+    .presentation-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(123, 74, 227, 0.3);
+        border-color: var(--accent-2);
+    }
+
+.presentation-icon {
+    font-size: 80px;
+    color: var(--accent-2);
+    margin-bottom: 20px;
+}
+
+/* Текстовая лекция */
+.lecture-content-text {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 30px;
+    border: 1px solid var(--glass-border);
+}
+
+    /* Таблицы в текстовой лекции */
+    .lecture-content-text table {
+        border-collapse: collapse !important;
+        width: auto !important;
+        background: white !important;
+        margin: 10px 0;
+    }
+
+        .lecture-content-text table td,
+        .lecture-content-text table th {
+            border: 1px solid #333 !important;
+            padding: 8px !important;
+            vertical-align: top !important;
+        }
+
+    .lecture-content-text img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 15px 0;
+    }
+
+/* Кнопка назад */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary-gradient);
+    padding: 10px 20px;
+    border-radius: 30px;
+    color: white !important;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 30px;
+}
+
+    .back-link:hover {
+        transform: translateX(-5px);
+        color: white !important;
+        box-shadow: 0 4px 15px rgba(123, 74, 227, 0.4);
+    }
+
+/* Стили для элементов презентации */
+.presentation-file-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+    .presentation-file-item:hover {
+        border-color: var(--accent-2);
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+.presentation-file-name {
+    color: var(--glass-text);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* Гарантия белого текста на цветных кнопках */
+.btn-view, .btn-start-test, .btn-success,
+.btn-lecture, .btn-presentation, .btn-video, .btn-purple {
+    color: white !important;
+}
+
+
+/* ========== СТИЛИ ДЛЯ СТРАНИЦЫ ТЕСТА ========== */
+.timer {
+    font-size: 2rem;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+}
+
+    .timer.warning {
+        color: #ff6b6b;
+    }
+
+    .timer.critical {
+        color: #dc3545;
+        animation: blink 1s infinite;
+    }
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.question-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.answer-option {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+    .answer-option:hover {
+        background: rgba(255,255,255,0.05);
+    }
+
+    .answer-option.selected {
+        border-color: var(--accent-2);
+        background: rgba(217,170,255,0.1);
+    }
+
+.question-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.question-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.question-nav-item {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.05);
+    color: var(--glass-text);
+    transition: all 0.2s;
+}
+
+    .question-nav-item:hover {
+        border-color: var(--accent-2);
+    }
+
+    .question-nav-item.active {
+        background: var(--primary-gradient);
+        border-color: var(--accent-2);
+    }
+
+    .question-nav-item.answered {
+        background: var(--success-gradient);
+    }
+
+.info-modal {
+    text-align: center;
+}
+
+    .info-modal p {
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+    }
+
+/* Переопределение для отображения темы/предмета в тесте */
+.test-info-badge {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 5px 15px;
+    color: var(--glass-text);
+    font-size: 0.9rem;
+}
+/* Стили для отображения ответов в результатах */
+.answer-option.correct {
+    border-color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.answer-option.incorrect {
+    border-color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.answer-option.student-selected {
+    border-width: 2px;
+}
+
+    .answer-option.student-selected.correct {
+        border-color: #28a745;
+        background: rgba(40, 167, 69, 0.2);
+    }
+
+    .answer-option.student-selected.incorrect {
+        border-color: #dc3545;
+        background: rgba(220, 53, 69, 0.2);
+    }
+
+.grade-excellent {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.grade-good {
+    background: linear-gradient(135deg, #17a2b8, #0dcaf0);
+}
+
+.grade-satisfactory {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+.grade-poor {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+}

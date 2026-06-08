@@ -1,0 +1,194 @@
+﻿@model AsFi.Models.User
+@{
+    ViewData["Title"] = "Личная страница";
+    var prefs = ViewBag.Preferences as AsFi.Models.UserPreference;
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/dashboard-styles.css" asp-append-version="true" />
+    <style>
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            .color-picker:hover {
+                transform: scale(1.1);
+            }
+
+            .color-picker.selected {
+                border-color: white;
+                box-shadow: 0 0 0 2px var(--glass-bg);
+            }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; margin: auto; padding: 20px;">
+        <div class="card" style="width: 100%; max-width: 600px;">
+            <div class="card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <a href="/Student/Index" class="text-white" style="font-size: 1.5rem;"><i class="bi bi-house-door-fill"></i></a>
+                    <h3 class="mb-0 text-white">Личная страница</h3>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="profileForm">
+                    <div class="mb-3">
+                        <label class="form-label">Фамилия</label>
+                        <input type="text" class="form-control" id="lastName" value="@Model.LastName" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Имя</label>
+                        <input type="text" class="form-control" id="firstName" value="@Model.FirstName" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Отчество</label>
+                        <input type="text" class="form-control" id="patronymic" value="@Model.Patronymic" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Аватар</label>
+                        <input type="file" class="form-control" id="avatarUpload" accept="image/*" />
+                        <div id="avatarPreview" class="mt-2">
+                            @if (!string.IsNullOrEmpty(Model.AvatarUrl))
+                            {
+                                <img src="@Model.AvatarUrl" class="avatar-preview" />
+                            }
+                        </div>
+                        <input type="hidden" id="avatarUrl" value="@Model.AvatarUrl" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Тема</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="themeSwitch" @(prefs?.Theme == "light" ? "checked" : "")>
+                            <label class="form-check-label">Светлая тема</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Основной цвет</label>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="color-picker" data-color="purple" style="background:#7b4ae3"></button>
+                            <button type="button" class="color-picker" data-color="red" style="background:#dc3545"></button>
+                            <button type="button" class="color-picker" data-color="yellow" style="background:#ffc107"></button>
+                            <button type="button" class="color-picker" data-color="green" style="background:#28a745"></button>
+                            <button type="button" class="color-picker" data-color="blue" style="background:#0d6efd"></button>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a href="/Student/Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Назад
+                        </a>
+                        <button type="submit" class="teacher-btn-purple">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedColor = '@(prefs?.PrimaryColor ?? "purple")';
+
+        document.querySelectorAll('.color-picker').forEach(btn => {
+            if (btn.dataset.color === selectedColor) btn.classList.add('selected');
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.color-picker').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedColor = btn.dataset.color;
+            });
+        });
+
+        document.getElementById('avatarUpload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await fetch('/Student/UploadAvatar', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+                const preview = document.getElementById('avatarPreview');
+                preview.innerHTML = `<img src="${data.path}?t=${Date.now()}" class="avatar-preview" />`;
+                document.getElementById('avatarUrl').value = data.path;
+            } else alert(data.message);
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                patronymic: document.getElementById('patronymic').value.trim() || null,
+                avatarUrl: document.getElementById('avatarUrl').value || null,
+                theme: document.getElementById('themeSwitch').checked ? 'light' : 'dark',
+                primaryColor: selectedColor
+            };
+            const res = await fetch('/Student/UpdateProfile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (result.success) {
+                alert('Данные сохранены');
+                applyTheme(payload.theme, payload.primaryColor);
+                localStorage.setItem('theme', payload.theme);
+                localStorage.setItem('primaryColor', payload.primaryColor);
+                
+                if (payload.avatarUrl) {
+                    const userIcon = document.querySelector('.user-info .user-icon');
+                    if (userIcon) userIcon.outerHTML = `<img src="${payload.avatarUrl}" class="user-icon" style="width:20px;height:20px;border-radius:50%;object-fit:cover;" />`;
+                }
+                
+                const userNameSpan = document.querySelector('#userName');
+                if (userNameSpan) userNameSpan.textContent = `${payload.firstName} ${payload.lastName}`;
+            } else alert(result.message);
+        });
+
+        function applyTheme(theme, primaryColor) {
+            const root = document.documentElement;
+            if (theme === 'light') {
+                root.style.setProperty('--background', '#f0f2f5');
+                root.style.setProperty('--glass-text', '#1a1a2e');
+                root.style.setProperty('--glass-text-light', '#4a4a6e');
+                root.style.setProperty('--glass-bg', 'rgba(255,255,255,0.9)');
+                root.style.setProperty('--glass-border', 'rgba(0,0,0,0.1)');
+            } else {
+                root.style.setProperty('--background', '#0a0a1f');
+                root.style.setProperty('--glass-text', '#FFFFFF');
+                root.style.setProperty('--glass-text-light', 'rgba(255,255,255,0.7)');
+                root.style.setProperty('--glass-bg', 'rgba(13,11,28,0.95)');
+                root.style.setProperty('--glass-border', 'rgba(217,170,255,0.15)');
+            }
+            let primaryGrad = '';
+            switch(primaryColor) {
+                case 'red': primaryGrad = 'linear-gradient(135deg,#dc3545,#c82333)'; break;
+                case 'yellow': primaryGrad = 'linear-gradient(135deg,#ffc107,#fd7e14)'; break;
+                case 'green': primaryGrad = 'linear-gradient(135deg,#28a745,#20c997)'; break;
+                case 'blue': primaryGrad = 'linear-gradient(135deg,#0d6efd,#0b5ed7)'; break;
+                default: primaryGrad = 'linear-gradient(135deg,#7b4ae3,#922eb7)';
+            }
+            root.style.setProperty('--primary-gradient', primaryGrad);
+        }
+
+        applyTheme('@(prefs?.Theme ?? "dark")', '@(prefs?.PrimaryColor ?? "purple")');
+    </script>
+</body>
+</html>

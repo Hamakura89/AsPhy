@@ -1,0 +1,189 @@
+﻿@{
+    ViewData["Title"] = "Создание теста";
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 900px;
+            margin-top: 40px;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #6f42c1;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .question-block {
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fafafa;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .remove-btn {
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1.3rem;
+        }
+
+            .remove-btn:hover {
+                color: #a71d2a;
+            }
+
+        .btn-purple {
+            background-color: #6f42c1;
+            color: white;
+            border-radius: 8px;
+            border: none;
+            padding: 8px 16px;
+        }
+
+            .btn-purple:hover {
+                background-color: #5a32a3;
+            }
+
+        .answer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+            .answer-item input[type="text"] {
+                flex: 1;
+            }
+
+        .img-preview {
+            max-width: 200px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Создание теста</h2>
+
+        <form id="testForm">
+            <div class="mb-3">
+                <label class="form-label">Название теста</label>
+                <input type="text" class="form-control" id="testTitle" placeholder="Введите название" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Тема</label>
+                <input type="text" class="form-control" id="testTopic" placeholder="Введите тему" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Время прохождения (минут)</label>
+                <input type="number" class="form-control" id="testTime" value="30" min="1" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Количество вопросов для студентов</label>
+                <input type="number" class="form-control" id="testLimit" value="10" min="1" />
+            </div>
+
+            <div class="form-check mb-4">
+                <input type="checkbox" class="form-check-input" id="isRandom" />
+                <label for="isRandom" class="form-check-label">Рандомный порядок вопросов</label>
+            </div>
+
+            <hr />
+
+            <h4 class="mb-3">Вопросы</h4>
+            <div id="questionsContainer"></div>
+
+            <button type="button" class="btn btn-outline-primary mb-4" id="addQuestionBtn">
+                <i class="bi bi-plus-lg"></i> Добавить вопрос
+            </button>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn-purple">Сохранить тест</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById("testForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById("testTitle").value.trim();
+            const topic = document.getElementById("testTopic").value.trim();
+            const duration = document.getElementById("testTime").value;
+
+            const questions = [];
+            document.querySelectorAll(".question-block").forEach((block) => {
+                const text = block.querySelector("textarea").value.trim();
+                const score = block.querySelector('input[type="number"]').value;
+                const imageInput = block.querySelector('input[type="file"]');
+                const image = imageInput && imageInput.files.length > 0 ? imageInput.files[0].name : "";
+
+                const answers = [];
+                block.querySelectorAll(".answer-item").forEach((ans) => {
+                    answers.push({
+                        text: ans.querySelector('input[type="text"]').value.trim(),
+                        correct: ans.querySelector('input[type="checkbox"]').checked
+                    });
+                });
+
+                questions.push({ text, score, image, answers });
+            });
+
+            const data = {
+                title,
+                topic,
+                duration,
+                questions
+            };
+
+            const response = await fetch('/Teacher/CreateTest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message);
+                window.location.href = '/Teacher/Index';
+            } else {
+                alert(result.message);
+            }
+        });
+    </script>
+
+</body>
+</html>

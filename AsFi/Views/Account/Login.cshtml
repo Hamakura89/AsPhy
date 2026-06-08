@@ -1,0 +1,103 @@
+﻿@model AsFi.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Вход";
+    Layout = "_AuthLayout";
+}
+
+<link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+
+<div class="auth-container">
+    <div class="slider">
+        <img class="slider-img active" src="https://soyuzmash.ru/upload/iblock/ac4/ac49bf3af819c461500677ab18d7a934.jpeg" alt="Slide 1" />
+        <img class="slider-img" src="https://naked-science.ru/wp-content/uploads/2016/06/field_image_pyatstatei.jpg" alt="Slide 2" />
+        <img class="slider-img" src="https://img.freepik.com/premium-photo/abstract-background-350_994728-9.jpg?semt=ais_hybrid&w=740&q=80" alt="Slide 3" />
+        <img class="slider-img" src="https://iteach.vspu.ru/files/2018/07/1515851667_2a6d2b3587837c44552925d5685466a4-1-960x600.jpg" alt="Slide 4" />
+        <img class="slider-img" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Slide 5" />
+    </div>
+
+    <div class="auth-right">
+        <div class="particles" id="particles"></div>
+
+        <form asp-action="Login" method="post" class="auth-form">
+            <h3>Вход в аккаунт</h3>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert-danger">
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                </div>
+            }
+
+            <div class="form-group">
+                <label asp-for="Login" class="form-label">Логин</label>
+                <input asp-for="Login" class="form-control" placeholder="Введите логин" />
+                <span asp-validation-for="Login" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" class="form-label">Пароль</label>
+                <div class="password-field">
+                    <input asp-for="Password" class="form-control" id="passwordField" type="password" placeholder="Введите пароль" />
+                    <button type="button" class="password-toggle" id="togglePassword">
+                        <i class="bi bi-eye-slash"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+                        <button type="submit" class="btn-auth">
+                <span>Войти</span>
+            </button>
+
+            <p class="auth-link">
+                Нет аккаунта?
+                <a asp-controller="Account" asp-action="Register">Зарегистрироваться</a>
+            </p>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordField = document.getElementById('passwordField');
+        const eyeIcon = togglePassword?.querySelector('i');
+        if (togglePassword && eyeIcon) {
+            togglePassword.addEventListener('click', function () {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                eyeIcon.classList.toggle('bi-eye');
+                eyeIcon.classList.toggle('bi-eye-slash');
+            });
+        }
+
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            if (!particlesContainer) return;
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 20}s`;
+                particle.style.animationDuration = `${15 + Math.random() * 15}s`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        const slides = document.querySelectorAll('.slider-img');
+        let currentSlide = 0;
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            setInterval(nextSlide, 5000);
+            const firstInput = document.querySelector('input[type="text"]');
+            if (firstInput) setTimeout(() => firstInput.focus(), 300);
+        });
+    </script>
+}

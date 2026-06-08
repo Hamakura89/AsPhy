@@ -1,0 +1,539 @@
+﻿@model AsFi.Models.Test
+@{
+    ViewData["Title"] = $"Редактирование теста: {Model.Title}";
+    var topics = ViewBag.Topics as List<AsFi.Models.Topic> ?? new List<AsFi.Models.Topic>();
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/dashboard-styles.css" asp-append-version="true" />
+   
+</head>
+<body class="teacher-body">
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+
+    <header class="teacher-header">
+        <div class="header-top">
+            <div class="header-container">
+                <div class="logo-nav-container">
+                    <img src="/images/logo.png" alt="AsFi" class="logo-img" onerror="this.style.display='none';">
+                    <div class="teacher-nav-tabs">
+                        <button class="teacher-nav-tab" onclick="window.location.href='/Teacher/Index'"><i class="bi bi-journal-bookmark"></i> Лекции</button>
+                        <button class="teacher-nav-tab active"><i class="bi bi-journal-text"></i> Тесты</button>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="teacher-user-info" id="userInfo" style="cursor:pointer" onclick="window.location.href='/Teacher/Profile'">
+                        <div class="user-avatar">
+                            <i class="bi bi-person-circle user-icon" id="defaultUserIcon"></i>
+                            <img id="userAvatarImg" style="display:none; width:20px; height:20px; border-radius:50%;" />
+                        </div>
+                        <span id="userName">Загрузка...</span>
+                    </div>
+                    <a href="/Teacher/Index" class="home-btn"><i class="bi bi-arrow-left"></i> Назад к тестам</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="edit-test-container">
+            <div class="edit-test-row">
+           
+                <div class="edit-test-sidebar">
+                    <div class="questions-sidebar">
+                        <h5><i class="bi bi-list-ul"></i> Вопросы</h5>
+                        <div id="questionsNavList"></div>
+                    </div>
+                </div>
+
+                <div class="edit-test-content">
+                   
+                    <div class="teacher-card mb-4">
+                        <div class="teacher-card-header"><h4 class="mb-0 text-white">Основная информация</h4></div>
+                        <div class="teacher-card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Тема</label>
+                                    <select class="form-control" id="topicId">
+                                        @foreach (var topic in topics)
+                                        {
+                                            <option value="@topic.Id" selected="@(Model.TopicId == topic.Id)">@topic.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Название теста</label>
+                                    <input type="text" class="form-control" id="testTitle" value="@Model.Title" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Время (минут)</label>
+                                    <input type="number" class="form-control" id="timeLimit" value="@Model.TimeLimitMinutes" min="1" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Попыток (1 = одна)</label>
+                                    <input type="number" class="form-control" id="attemptsAllowed" value="@(Model.AttemptsAllowed ?? 1)" min="1" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="questionsList">
+                        @if (Model.TestQuestions != null && Model.TestQuestions.Any())
+                        {
+                            int idx = 1;
+                            foreach (var q in Model.TestQuestions)
+                            {
+                                <div class="question-card" data-qid="@q.Id" data-question-index="@idx">
+                                    <div class="question-header">
+                                        <div class="question-title">Вопрос @idx</div>
+                                        <div class="points-editor">
+                                            <span>Баллы:</span>
+                                            <input type="number" class="points-input" value="@q.Points" min="1" step="1" style="width: 70px;">
+                                            <button type="button" class="btn btn-sm remove-question ms-2">Удалить</button>
+                                        </div>
+                                    </div>
+                                    <textarea class="form-control question-text question-text-area" rows="3">@q.QuestionText</textarea>
+
+                                    <div class="images-section">
+                                        <label class="form-label">Изображения вопроса (можно несколько)</label>
+                                        <input type="file" class="form-control question-images-input" accept="image/*" multiple />
+                                        <div class="file-list question-images-list mt-2">
+                                            @if (!string.IsNullOrEmpty(q.ImageUrl))
+                                            {
+                                                var urls = q.ImageUrl.Split(';', StringSplitOptions.RemoveEmptyEntries);
+                                                foreach (var url in urls)
+                                                {
+                                                    <div class="file-item" data-url="@url">
+                                                        <img src="@url" />
+                                                        <span class="remove-file-btn" onclick="removeQuestionImage(this)">×</span>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                        <input type="hidden" class="question-images-hidden" value="@q.ImageUrl" />
+                                    </div>
+
+                                    <div class="answers-section">
+                                        <label class="form-label">Варианты ответов (галочка – правильный)</label>
+                                        <div class="answers-list">
+                                            @foreach (var opt in q.AnswerOptions)
+                                            {
+                                                <div class="answer-option-row mb-2" data-optid="@opt.Id">
+                                                    <div class="d-flex">
+                                                        <input type="checkbox" class="correct-checkbox" @(opt.IsCorrect ? "checked" : "") />
+                                                        <input type="text" class="form-control answer-text" value="@(opt.Text ?? "")" placeholder="Текст ответа" />
+                                                        <div class="answer-image-container">
+                                                            <input type="file" class="answer-image-input" accept="image/*" style="display:none" />
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary answer-image-upload-btn" onclick="this.previousElementSibling.click()"><i class="bi bi-image"></i></button>
+                                                            @if (!string.IsNullOrEmpty(opt.ImageUrl))
+                                                            {
+                                                                <img src="@opt.ImageUrl" class="answer-image-preview mt-1" />
+                                                                <span class="remove-answer-image" onclick="removeAnswerImage(this)">×</span>
+                                                            }
+                                                            <input type="hidden" class="answer-image-hidden" value="@opt.ImageUrl" />
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm remove-answer"><i class="bi bi-trash"></i></button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <button type="button" class="btn btn-sm add-answer mt-2"><i class="bi bi-plus-lg"></i> Добавить вариант</button>
+                                    </div>
+                                </div>
+                                idx++;
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">Нет вопросов. Добавьте первый вопрос.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="fixed-bottom-bar">
+        <div class="d-flex justify-content-between align-items-center">
+            <button id="saveTestBtn" class="btn teacher-btn-purple">
+                <i class="bi bi-save"></i> Сохранить тест
+            </button>
+            <button id="addQuestionBtn" class="btn teacher-btn-success">
+                <i class="bi bi-plus-lg"></i> Добавить вопрос
+            </button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmQuestionDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title text-white">Удаление вопроса</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body text-white">Удалить вопрос? Ответы будут удалены.</div>
+                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button><button id="confirmQuestionDeleteBtn" class="btn btn-danger">Удалить</button></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="confirmAnswerDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title text-white">Удалить вариант?</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button><button id="confirmAnswerDeleteBtn" class="btn btn-danger">Удалить</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="fullImageModal" class="image-modal-full" onclick="closeFullImage()">
+        <img id="fullImage" src="" alt="Полноэкранное изображение" />
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let questionToDelete = null, answerToDelete = null;
+        let currentUser = null;
+
+        async function loadCurrentUser() {
+            const res = await fetch('/Teacher/GetCurrentUser');
+            const data = await res.json();
+            if (data.success) {
+                currentUser = data;
+                document.getElementById('userName').innerText = `${data.firstName} ${data.lastName}`;
+                if (data.avatarUrl) {
+                    document.getElementById('defaultUserIcon').style.display = 'none';
+                    document.getElementById('userAvatarImg').src = data.avatarUrl;
+                    document.getElementById('userAvatarImg').style.display = 'inline-block';
+                }
+            } else {
+                document.getElementById('userName').innerText = 'Преподаватель';
+            }
+        }
+
+        function openFullImage(src) {
+            const modal = document.getElementById('fullImageModal');
+            const img = document.getElementById('fullImage');
+            img.src = src;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeFullImage() {
+            const modal = document.getElementById('fullImageModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeFullImage();
+        });
+
+        function initImageClickHandlers() {
+            document.querySelectorAll('.file-item img, .answer-image-preview').forEach(img => {
+                img.removeEventListener('click', imageClickHandler);
+                img.addEventListener('click', imageClickHandler);
+            });
+        }
+        function imageClickHandler(e) {
+            e.stopPropagation();
+            openFullImage(this.src);
+        }
+
+        function removeAnswerImage(btn) {
+            const container = btn.closest('.answer-image-container');
+            const hiddenInput = container.querySelector('.answer-image-hidden');
+            const preview = container.querySelector('.answer-image-preview');
+            if (preview) preview.remove();
+            if (hiddenInput) hiddenInput.value = '';
+            btn.remove();
+        }
+
+        async function setupAnswerImageUpload(btn) {
+            const input = btn.previousElementSibling;
+            const container = btn.closest('.answer-image-container');
+            const hiddenInput = container.querySelector('.answer-image-hidden');
+            let preview = container.querySelector('.answer-image-preview');
+            input.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append('file', file);
+                const res = await fetch('/Teacher/UploadFile', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) {
+                    if (preview) preview.remove();
+                    const newPreview = document.createElement('img');
+                    newPreview.src = data.path;
+                    newPreview.className = 'answer-image-preview mt-1';
+                    newPreview.style.maxWidth = '60px';
+                    newPreview.style.cursor = 'pointer';
+                    newPreview.addEventListener('click', imageClickHandler);
+                    container.appendChild(newPreview);
+                    hiddenInput.value = data.path;
+
+                    let removeBtn = container.querySelector('.remove-answer-image');
+                    if (!removeBtn) {
+                        removeBtn = document.createElement('span');
+                        removeBtn.className = 'remove-answer-image';
+                        removeBtn.innerHTML = '×';
+                        removeBtn.onclick = () => removeAnswerImage(removeBtn);
+                        container.appendChild(removeBtn);
+                    }
+                } else alert('Ошибка загрузки: ' + data.message);
+                input.value = '';
+            });
+        }
+
+        async function handleQuestionImagesUpload(input) {
+            const files = Array.from(input.files);
+            if (!files.length) return;
+            const listContainer = input.nextElementSibling;
+            const hiddenInput = listContainer.nextElementSibling;
+            let currentUrls = hiddenInput.value ? hiddenInput.value.split(';') : [];
+
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+                const res = await fetch('/Teacher/UploadFile', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) {
+                    currentUrls.push(data.path);
+                    const div = document.createElement('div');
+                    div.className = 'file-item';
+                    div.dataset.url = data.path;
+                    div.innerHTML = `<img src="${data.path}" /><span class="remove-file-btn" onclick="removeQuestionImage(this)">×</span>`;
+                    listContainer.appendChild(div);
+                } else alert('Ошибка загрузки: ' + data.message);
+            }
+            hiddenInput.value = currentUrls.join(';');
+            input.value = '';
+            initImageClickHandlers();
+        }
+
+        function removeQuestionImage(btn) {
+            const fileItem = btn.closest('.file-item');
+            const url = fileItem.dataset.url;
+            const listContainer = fileItem.parentElement;
+            const hiddenInput = listContainer.nextElementSibling;
+            let urls = hiddenInput.value.split(';').filter(u => u !== url);
+            hiddenInput.value = urls.join(';');
+            fileItem.remove();
+        }
+
+        function updateQuestionsNav() {
+            const cards = document.querySelectorAll('.question-card');
+            const navContainer = document.getElementById('questionsNavList');
+            if (!navContainer) return;
+            navContainer.innerHTML = '';
+            cards.forEach((card, idx) => {
+                const questionText = card.querySelector('.question-text')?.value || '';
+                let preview = questionText.trim();
+                if (preview.length > 35) preview = preview.substring(0, 32) + '...';
+                const div = document.createElement('div');
+                div.className = 'sidebar-question-item';
+                div.innerHTML = `<small><strong>${idx+1}.</strong> ${preview || 'Новый вопрос'}</small>`;
+                div.addEventListener('click', () => {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    document.querySelectorAll('.sidebar-question-item').forEach(item => item.classList.remove('active'));
+                    div.classList.add('active');
+                });
+                navContainer.appendChild(div);
+            });
+        }
+
+        function initQuestionListeners(card) {
+            
+            const removeBtn = card.querySelector('.remove-question');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => {
+                    questionToDelete = card;
+                    new bootstrap.Modal(document.getElementById('confirmQuestionDeleteModal')).show();
+                });
+            }
+          
+            card.querySelectorAll('.remove-answer').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    answerToDelete = this.closest('.answer-option-row');
+                    new bootstrap.Modal(document.getElementById('confirmAnswerDeleteModal')).show();
+                });
+            });
+           
+            const addAnswerBtn = card.querySelector('.add-answer');
+            if (addAnswerBtn) {
+                const newBtn = addAnswerBtn.cloneNode(true);
+                addAnswerBtn.parentNode.replaceChild(newBtn, addAnswerBtn);
+                newBtn.addEventListener('click', function() {
+                    const answersList = this.parentElement.querySelector('.answers-list');
+                    const div = document.createElement('div');
+                    div.className = 'answer-option-row mb-2';
+                    div.innerHTML = `
+                        <div class="d-flex">
+                            <input type="checkbox" class="correct-checkbox" />
+                            <input type="text" class="form-control answer-text" placeholder="Текст ответа" />
+                            <div class="answer-image-container">
+                                <input type="file" class="answer-image-input" accept="image/*" style="display:none" />
+                                <button type="button" class="btn btn-sm btn-outline-secondary answer-image-upload-btn" onclick="this.previousElementSibling.click()"><i class="bi bi-image"></i></button>
+                                <input type="hidden" class="answer-image-hidden" />
+                            </div>
+                            <button type="button" class="btn btn-sm remove-answer"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                    answersList.appendChild(div);
+                    div.querySelector('.remove-answer').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        answerToDelete = div;
+                        new bootstrap.Modal(document.getElementById('confirmAnswerDeleteModal')).show();
+                    });
+                    setupAnswerImageUpload(div.querySelector('.answer-image-upload-btn'));
+                });
+            }
+            
+            const imageInput = card.querySelector('.question-images-input');
+            if (imageInput) {
+                imageInput.addEventListener('change', e => handleQuestionImagesUpload(e.target));
+            }
+        }
+
+        function addNewQuestion() {
+            const count = document.querySelectorAll('.question-card').length + 1;
+            const card = document.createElement('div');
+            card.className = 'question-card mb-4';
+            card.setAttribute('data-question-index', count);
+            card.innerHTML = `
+                <div class="question-header">
+                    <div class="question-title">Вопрос ${count}</div>
+                    <div class="points-editor">
+                        <span>Баллы:</span>
+                        <input type="number" class="points-input" value="1" min="1" step="1" style="width: 70px;">
+                        <button type="button" class="btn btn-sm remove-question ms-2">Удалить</button>
+                    </div>
+                </div>
+                <textarea class="form-control question-text question-text-area" rows="3" placeholder="Введите текст вопроса..."></textarea>
+
+                <div class="images-section">
+                    <label class="form-label">Изображения вопроса</label>
+                    <input type="file" class="form-control question-images-input" accept="image/*" multiple />
+                    <div class="file-list question-images-list mt-2"></div>
+                    <input type="hidden" class="question-images-hidden" />
+                </div>
+
+                <div class="answers-section">
+                    <label class="form-label">Варианты ответов (галочка – правильный)</label>
+                    <div class="answers-list">
+                        <div class="answer-option-row mb-2">
+                            <div class="d-flex">
+                                <input type="checkbox" class="correct-checkbox" />
+                                <input type="text" class="form-control answer-text" placeholder="Текст ответа" />
+                                <div class="answer-image-container">
+                                    <input type="file" class="answer-image-input" accept="image/*" style="display:none" />
+                                    <button type="button" class="btn btn-sm btn-outline-secondary answer-image-upload-btn" onclick="this.previousElementSibling.click()"><i class="bi bi-image"></i></button>
+                                    <input type="hidden" class="answer-image-hidden" />
+                                </div>
+                                <button type="button" class="btn btn-sm remove-answer"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm add-answer mt-2"><i class="bi bi-plus-lg"></i> Добавить вариант</button>
+                </div>
+            `;
+            document.getElementById('questionsList').appendChild(card);
+            initQuestionListeners(card);
+            card.querySelectorAll('.answer-image-upload-btn').forEach(btn => setupAnswerImageUpload(btn));
+            const imageInput = card.querySelector('.question-images-input');
+            if (imageInput) imageInput.addEventListener('change', e => handleQuestionImagesUpload(e.target));
+            updateQuestionsNav();
+            
+            document.querySelectorAll('.question-card').forEach((c, i) => {
+                c.querySelector('.question-title').innerText = `Вопрос ${i+1}`;
+                c.setAttribute('data-question-index', i+1);
+            });
+        }
+
+        function updateQuestionNumbers() {
+            document.querySelectorAll('.question-card').forEach((card, idx) => {
+                card.querySelector('.question-title').innerHTML = `Вопрос ${idx+1}`;
+                card.setAttribute('data-question-index', idx+1);
+            });
+            updateQuestionsNav();
+        }
+
+        async function saveTest() {
+            const testId = @Model.Id;
+            const test = {
+                Id: testId,
+                Title: document.getElementById('testTitle')?.value || '',
+                TimeLimitMinutes: parseInt(document.getElementById('timeLimit')?.value || '60'),
+                TopicId: parseInt(document.getElementById('topicId')?.value || '1'),
+                AttemptsAllowed: parseInt(document.getElementById('attemptsAllowed')?.value || '1'),
+                Questions: []
+            };
+            const cards = document.querySelectorAll('.question-card');
+            for (const card of cards) {
+                const text = card.querySelector('.question-text')?.value || '';
+                const points = parseInt(card.querySelector('.points-input')?.value || '1');
+                const imageHidden = card.querySelector('.question-images-hidden');
+                const imageUrl = imageHidden ? imageHidden.value : '';
+                const answers = [];
+                card.querySelectorAll('.answer-option-row').forEach(opt => {
+                    const answerText = opt.querySelector('.answer-text')?.value || '';
+                    const isCorrect = opt.querySelector('.correct-checkbox')?.checked || false;
+                    const answerImageHidden = opt.querySelector('.answer-image-hidden');
+                    const answerImageUrl = answerImageHidden ? answerImageHidden.value : '';
+                    if (answerText.trim() !== '') {
+                        answers.push({ Text: answerText, IsCorrect: isCorrect, ImageUrl: answerImageUrl });
+                    }
+                });
+                if (text.trim() !== '' || answers.length > 0) {
+                    test.Questions.push({
+                        Text: text,
+                        Points: points,
+                        ImageUrl: imageUrl,
+                        AnswerOptions: answers
+                    });
+                }
+            }
+            const response = await fetch('/Teacher/SaveTest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(test)
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Тест сохранён');
+                window.location.href = '/Teacher/Index';
+            } else alert('Ошибка: ' + result.message);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCurrentUser();
+            updateQuestionsNav();
+            document.querySelectorAll('.question-card').forEach(initQuestionListeners);
+            document.querySelectorAll('.answer-image-upload-btn').forEach(btn => setupAnswerImageUpload(btn));
+            initImageClickHandlers();
+
+            document.getElementById('saveTestBtn')?.addEventListener('click', saveTest);
+            document.getElementById('addQuestionBtn')?.addEventListener('click', addNewQuestion);
+            document.getElementById('confirmQuestionDeleteBtn')?.addEventListener('click', () => {
+                if (questionToDelete) {
+                    questionToDelete.remove();
+                    updateQuestionNumbers();
+                    bootstrap.Modal.getInstance(document.getElementById('confirmQuestionDeleteModal')).hide();
+                    questionToDelete = null;
+                }
+            });
+            document.getElementById('confirmAnswerDeleteBtn')?.addEventListener('click', () => {
+                if (answerToDelete) {
+                    answerToDelete.remove();
+                    bootstrap.Modal.getInstance(document.getElementById('confirmAnswerDeleteModal')).hide();
+                    answerToDelete = null;
+                }
+            });
+        });
+    </script>
+    <script src="~/js/theme.js"></script>
+</body>
+</html>

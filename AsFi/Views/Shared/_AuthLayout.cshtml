@@ -1,0 +1,144 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - AsFi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        nav {
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .brand {
+            font-weight: bold;
+            color: #6f42c1;
+            font-size: 1.4rem;
+        }
+
+        .auth-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            width: 100%;
+        }
+
+        .slider {
+            flex: 0 0 60%;
+            background-color: #000;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slider-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+            .slider-img.active {
+                opacity: 1;
+            }
+
+        .auth-right {
+            flex: 1; 
+            padding: 50px 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+        }
+
+        .auth-form {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .btn-purple {
+            background-color: #6f42c1;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+            .btn-purple:hover {
+                background-color: #5a32a3;
+            }
+
+        .form-control {
+            padding: 12px;
+            font-size: 1rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-link {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.15s;
+        }
+
+            .nav-link:hover {
+                color: #6f42c1;
+            }
+
+        .download-btn {
+            background-color: #6c3ef4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            .download-btn:hover {
+                background-color: #5a2fd8;
+            }
+    </style>
+</head>
+<body>
+    <nav class="navbar px-4 py-2 d-flex justify-content-between align-items-center">
+        <div class="brand">AsPhi</div>
+
+        <div class="nav-right">
+            <a asp-controller="Account" asp-action="Login" class="nav-link">Войти</a>
+            <a asp-controller="Account" asp-action="Register" class="nav-link">Зарегистрироваться</a>
+            
+        </div>
+    </nav>
+
+    @RenderBody()
+
+    @RenderSection("Scripts", required: false)
+</body>
+<script src="~/js/theme.js"></script>
+</html>

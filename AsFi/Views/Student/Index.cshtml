@@ -1,0 +1,544 @@
+﻿@model AsFi.Models.StudentDashboardDto
+@{
+    ViewData["Title"] = "Кабинет студента";
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/dashboard-styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+
+    <header class="main-header">
+        <div class="header-top">
+            <div class="header-container">
+                <div class="logo-nav-container">
+                    <img src="/images/logo.png" alt="AsFi" class="logo-img" onerror="this.style.display='none';">
+                    <div class="nav-tabs">
+                        <button class="nav-tab active" data-section="lectures">
+                            <i class="bi bi-journal-bookmark"></i> Лекции
+                        </button>
+                        <button class="nav-tab" data-section="tests">
+                            <i class="bi bi-journal-text"></i> Тесты
+                        </button>
+                        <button class="nav-tab" onclick="window.location.href='/Student/TestResults'">
+                            <i class="bi bi-award"></i> Оценки
+                        </button>
+                    </div>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Поиск по названию..." id="searchInput">
+                    <i class="bi bi-search search-icon"></i>
+                </div>
+
+                <div class="header-right">
+                    <div class="user-info" id="userInfo" style="cursor:pointer" onclick="window.location.href='/Student/Profile'">
+                        <div id="userAvatarContainer" style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px;">
+                            <i class="bi bi-person-circle user-icon" id="defaultUserIcon"></i>
+                            <img id="userAvatarImg" style="display:none; width:20px; height:20px; border-radius:50%; object-fit:cover;" />
+                        </div>
+                        <span id="userName">Загрузка...</span>
+                    </div>
+
+                    
+                    <div id="groupStatusArea"></div>
+
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="btn-logout">
+                            <i class="bi bi-box-arrow-right"></i> Выйти
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container-fluid">
+            <div class="row">
+                
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="filter-sticky-container">
+                        <div class="filter-card">
+                            <div class="filter-card-header">
+                                <h5><i class="bi bi-funnel"></i> Фильтрация</h5>
+                            </div>
+                            <div class="filter-card-body">
+                                <div id="lectures-filter" class="filter-section active">
+                                    <div class="mb-3">
+                                        <label class="form-label">Предмет</label>
+                                        <div id="lecture-subjects-filter" class="filter-options"></div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Раздел</label>
+                                        <div id="lecture-sections-filter" class="filter-options"></div>
+                                    </div>
+                                    <button class="teacher-btn-purple w-100" id="clearLectureFilters">Сбросить фильтры</button>
+                                </div>
+                                <div id="tests-filter" class="filter-section">
+                                    <div class="mb-3">
+                                        <label class="form-label">Предмет</label>
+                                        <div id="test-subjects-filter" class="filter-options"></div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Тема теста</label>
+                                        <div id="test-topics-filter" class="filter-options"></div>
+                                    </div>
+                                    <button class="teacher-btn-purple w-100" id="clearTestFilters">Сбросить фильтры</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+               
+                <div class="col-lg-9 col-md-8">
+                    
+                    <div id="lectures-section" class="section-content active">
+                        <div class="teacher-card">
+                            <div class="teacher-card-body">
+                                <div id="lectures-list"><div class="empty-state">Загрузка лекций...</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div id="tests-section" class="section-content">
+                        <div class="teacher-card">
+                            <div class="teacher-card-body">
+                                <div id="tests-list"><div class="empty-state">Загрузка тестов...</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+   
+    <div class="modal fade" id="joinGroupModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-people me-2"></i>Вступить в группу</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">Введите кодовое слово, которое предоставил преподаватель:</p>
+                    <div class="mb-3">
+                        <label for="inviteCode" class="form-label">Кодовое слово:</label>
+                        <input type="text" class="form-control" id="inviteCode" placeholder="Введите кодовое слово" maxlength="20">
+                        <div class="invalid-feedback" id="inviteCodeError"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" id="joinGroupBtn">
+                        <i class="bi bi-check-lg"></i> Вступить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        
+        let lectures = [];
+        let tests = [];
+        let currentUserName = '';
+        let currentGroupName = null;
+        let activeLectureFilter = { subjectId: null, sectionId: null };
+        let activeTestFilter = { subjectId: null, topic: null };
+        let currentSection = 'lectures';
+
+        
+        document.addEventListener('DOMContentLoaded', async function () {
+            await loadCurrentUser();
+            await loadUserGroup();
+            await loadLectures();
+            await loadTests();
+            initNavigation();
+            initSearch();
+            setupJoinGroupModal();
+            initFilters();
+        });
+
+        
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/Student/GetCurrentUser');
+                const data = await response.json();
+                if (data.success) {
+                    currentUserName = `${data.lastName} ${data.firstName}`;
+                    document.getElementById('userName').textContent = currentUserName;
+                    if (data.avatarUrl) {
+                        document.getElementById('defaultUserIcon').style.display = 'none';
+                        const img = document.getElementById('userAvatarImg');
+                        img.src = data.avatarUrl;
+                        img.style.display = 'inline-block';
+                    } else {
+                        document.getElementById('defaultUserIcon').style.display = 'inline-block';
+                        document.getElementById('userAvatarImg').style.display = 'none';
+                    }
+                } else {
+                    document.getElementById('userName').textContent = 'Студент';
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('userName').textContent = 'Студент';
+            }
+        }
+
+        
+        async function loadUserGroup() {
+            try {
+                const response = await fetch('/Student/GetUserGroup');
+                const data = await response.json();
+                if (data.success) {
+                    currentGroupName = data.groupName;
+                } else {
+                    currentGroupName = null;
+                }
+                renderGroupStatus();
+            } catch (error) {
+                console.error('Ошибка загрузки группы:', error);
+                currentGroupName = null;
+                renderGroupStatus();
+            }
+        }
+
+        function renderGroupStatus() {
+            const container = document.getElementById('groupStatusArea');
+            if (currentGroupName) {
+                container.innerHTML = `
+                    <div class="user-info" style="background: rgba(123,74,227,0.2);">
+                        <i class="bi bi-people-fill user-icon"></i>
+                        <span>${escapeHtml(currentGroupName)}</span>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button type="button" class="btn-join-group" data-bs-toggle="modal" data-bs-target="#joinGroupModal">
+                        <i class="bi bi-people"></i> Вступить в группу
+                    </button>
+                `;
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function showNotification(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+            alertDiv.style.zIndex = 9999;
+            alertDiv.innerHTML = message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 4000);
+        }
+
+        
+        function setupJoinGroupModal() {
+            const joinGroupBtn = document.getElementById('joinGroupBtn');
+            const inviteCodeInput = document.getElementById('inviteCode');
+            joinGroupBtn.addEventListener('click', joinGroup);
+            inviteCodeInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') joinGroup();
+            });
+        }
+
+        async function joinGroup() {
+            const inviteCode = document.getElementById('inviteCode').value.trim();
+            const joinGroupBtn = document.getElementById('joinGroupBtn');
+            const errorDiv = document.getElementById('inviteCodeError');
+            const codeInput = document.getElementById('inviteCode');
+            if (!inviteCode) {
+                errorDiv.textContent = 'Введите кодовое слово';
+                codeInput.classList.add('is-invalid');
+                return;
+            }
+            joinGroupBtn.disabled = true;
+            joinGroupBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Обработка...';
+            try {
+                const response = await fetch('/Student/JoinGroup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ inviteCode: inviteCode })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('joinGroupModal'));
+                    modal.hide();
+                    showNotification(result.message, 'success');
+                    await loadUserGroup();
+                    await loadLectures();
+                    await loadTests();
+                    codeInput.value = '';
+                    codeInput.classList.remove('is-invalid');
+                } else {
+                    errorDiv.textContent = result.message;
+                    codeInput.classList.add('is-invalid');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Ошибка сети';
+                codeInput.classList.add('is-invalid');
+            } finally {
+                joinGroupBtn.disabled = false;
+                joinGroupBtn.innerHTML = '<i class="bi bi-check-lg"></i> Вступить';
+            }
+        }
+
+        
+        function initNavigation() {
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    const section = this.getAttribute('data-section');
+                    if (!section) return;
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.section-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(section + '-section').classList.add('active');
+                    currentSection = section;
+                    
+                    document.querySelectorAll('.filter-section').forEach(f => f.classList.remove('active'));
+                    document.getElementById(section + '-filter').classList.add('active');
+                });
+            });
+        }
+
+        
+        function initSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', function () {
+                if (currentSection === 'lectures') renderLectures();
+                else renderTests();
+            });
+        }
+
+        
+        async function loadLectures() {
+            const container = document.getElementById('lectures-list');
+            container.innerHTML = '<div class="empty-state"><i class="bi bi-hourglass-split"></i><h5>Загрузка лекций...</h5></div>';
+            try {
+                const response = await fetch('/Student/GetLectures');
+                const data = await response.json();
+                if (data.success === false) {
+                    container.innerHTML = `<div class="alert alert-danger">${data.message || 'Ошибка'}</div>`;
+                    return;
+                }
+                lectures = data;
+                renderLectures();
+                updateFilters();
+            } catch (error) {
+                container.innerHTML = '<div class="alert alert-danger">Ошибка загрузки</div>';
+            }
+        }
+
+        
+        async function loadTests() {
+            const container = document.getElementById('tests-list');
+            container.innerHTML = '<div class="empty-state"><i class="bi bi-hourglass-split"></i><h5>Загрузка тестов...</h5></div>';
+            try {
+                const response = await fetch('/Student/GetTests');
+                const data = await response.json();
+                if (data.success === false) {
+                    container.innerHTML = `<div class="alert alert-danger">${data.message || 'Ошибка'}</div>`;
+                    return;
+                }
+                tests = data;
+                renderTests();
+                updateFilters();
+            } catch (error) {
+                container.innerHTML = '<div class="alert alert-danger">Ошибка загрузки</div>';
+            }
+        }
+
+        
+        function renderLectures() {
+            const container = document.getElementById('lectures-list');
+            let filtered = lectures.filter(l => {
+                if (activeLectureFilter.subjectId && l.subjectId != activeLectureFilter.subjectId) return false;
+                if (activeLectureFilter.sectionId && l.sectionId != activeLectureFilter.sectionId) return false;
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                if (searchTerm && !l.title.toLowerCase().includes(searchTerm)) return false;
+                return true;
+            });
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="bi bi-journal-bookmark"></i><h5>Нет доступных лекций</h5></div>';
+                return;
+            }
+            
+            const bySubject = {};
+            filtered.forEach(l => {
+                const subjName = l.subjectName || 'Без предмета';
+                if (!bySubject[subjName]) bySubject[subjName] = {};
+                const secName = l.sectionName || 'Без раздела';
+                if (!bySubject[subjName][secName]) bySubject[subjName][secName] = [];
+                bySubject[subjName][secName].push(l);
+            });
+            let html = '';
+            for (const subjectName in bySubject) {
+                html += `<div class="subject-group"><h4 class="text-white">${escapeHtml(subjectName)}</h4>`;
+                for (const sectionName in bySubject[subjectName]) {
+                    html += `<div class="section-group"><h5 class="text-white">${escapeHtml(sectionName)}</h5>`;
+                    bySubject[subjectName][sectionName].forEach(l => {
+                        let badgeClass = '', btnClass = 'btn-purple', btnText = 'Просмотреть', icon = 'bi-eye';
+                        const type = (l.lectureType || '').toLowerCase();
+                        if (type === 'лекция') { badgeClass = 'lecture'; btnClass = 'btn-lecture'; icon = 'bi-journal-text'; }
+                        else if (type === 'презентация') { badgeClass = 'presentation'; btnClass = 'btn-presentation'; btnText = 'Открыть'; icon = 'bi-file-earmark-slides'; }
+                        else if (type === 'видео') { badgeClass = 'video'; btnClass = 'btn-video'; btnText = 'Смотреть'; icon = 'bi-play-circle'; }
+                        html += `
+                            <div class="lecture-item question-card" onclick="viewLecture(${l.id})">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6>${escapeHtml(l.title)}</h6>
+                                        <div><small>Тип: ${escapeHtml(l.lectureType)}</small></div>
+                                    </div>
+                                    <div class="action-buttons">
+                                        <button class="btn ${btnClass} btn-sm" onclick="event.stopPropagation(); viewLecture(${l.id})"><i class="bi ${icon}"></i> ${btnText}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        
+        function renderTests() {
+            const container = document.getElementById('tests-list');
+            let filtered = tests.filter(t => {
+                if (activeTestFilter.subjectId && t.subjectId != activeTestFilter.subjectId) return false;
+                if (activeTestFilter.topic && !t.topicName?.toLowerCase().includes(activeTestFilter.topic.toLowerCase())) return false;
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                if (searchTerm && !t.title.toLowerCase().includes(searchTerm)) return false;
+                return true;
+            });
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="bi bi-journal-text"></i><h5>Нет доступных тестов</h5></div>';
+                return;
+            }
+            const bySubject = {};
+            filtered.forEach(t => {
+                const subjName = t.subjectName || 'Без предмета';
+                if (!bySubject[subjName]) bySubject[subjName] = [];
+                bySubject[subjName].push(t);
+            });
+            let html = '';
+            for (const subjectName in bySubject) {
+                html += `<div class="subject-group"><h4 class="text-white">${escapeHtml(subjectName)}</h4>`;
+                bySubject[subjectName].forEach(t => {
+                    html += `
+                        <div class="test-item question-card" onclick="takeTest(${t.id})">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6>${escapeHtml(t.title)}</h6>
+                                    <div><small>Тема: ${escapeHtml(t.topicName)} | Время: ${t.timeLimitMinutes} мин</small></div>
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); takeTest(${t.id})"><i class="bi bi-play-circle"></i> Начать тест</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        
+        function updateFilters() {
+            
+            const uniqueSubjects = [...new Map(lectures.map(l => [l.subjectId, { id: l.subjectId, name: l.subjectName }])).values()];
+            const subjectsDiv = document.getElementById('lecture-subjects-filter');
+            subjectsDiv.innerHTML = uniqueSubjects.map(s => `<button class="filter-btn ${activeLectureFilter.subjectId == s.id ? 'active' : ''}" data-subject="${s.id}">${escapeHtml(s.name)}</button>`).join('');
+            document.querySelectorAll('#lecture-subjects-filter .filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeLectureFilter.subjectId = btn.dataset.subject ? parseInt(btn.dataset.subject) : null;
+                    renderLectures();
+                    updateFilters();
+                });
+            });
+            const uniqueSections = [...new Map(lectures.map(l => [l.sectionId, { id: l.sectionId, name: l.sectionName }])).values()];
+            const sectionsDiv = document.getElementById('lecture-sections-filter');
+            sectionsDiv.innerHTML = uniqueSections.map(s => `<button class="filter-btn ${activeLectureFilter.sectionId == s.id ? 'active' : ''}" data-section="${s.id}">${escapeHtml(s.name)}</button>`).join('');
+            document.querySelectorAll('#lecture-sections-filter .filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeLectureFilter.sectionId = btn.dataset.section ? parseInt(btn.dataset.section) : null;
+                    renderLectures();
+                    updateFilters();
+                });
+            });
+
+            
+            const testSubjects = [...new Map(tests.map(t => [t.subjectId, { id: t.subjectId, name: t.subjectName }])).values()];
+            const testSubjectsDiv = document.getElementById('test-subjects-filter');
+            testSubjectsDiv.innerHTML = testSubjects.map(s => `<button class="filter-btn ${activeTestFilter.subjectId == s.id ? 'active' : ''}" data-subject="${s.id}">${escapeHtml(s.name)}</button>`).join('');
+            document.querySelectorAll('#test-subjects-filter .filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeTestFilter.subjectId = btn.dataset.subject ? parseInt(btn.dataset.subject) : null;
+                    renderTests();
+                    updateFilters();
+                });
+            });
+            const testTopics = [...new Set(tests.map(t => t.topicName).filter(Boolean))];
+            const topicsDiv = document.getElementById('test-topics-filter');
+            topicsDiv.innerHTML = testTopics.map(topic => `<button class="filter-btn ${activeTestFilter.topic == topic ? 'active' : ''}" data-topic="${topic}">${escapeHtml(topic)}</button>`).join('');
+            document.querySelectorAll('#test-topics-filter .filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeTestFilter.topic = btn.dataset.topic || null;
+                    renderTests();
+                    updateFilters();
+                });
+            });
+        }
+
+        document.getElementById('clearLectureFilters').addEventListener('click', () => {
+            activeLectureFilter = { subjectId: null, sectionId: null };
+            renderLectures();
+            updateFilters();
+        });
+        document.getElementById('clearTestFilters').addEventListener('click', () => {
+            activeTestFilter = { subjectId: null, topic: null };
+            renderTests();
+            updateFilters();
+        });
+
+        function viewLecture(id) { window.location.href = `/Student/ViewLecture/${id}`; }
+        function takeTest(id) { window.location.href = `/Student/TakeTest/${id}`; }
+
+        function initFilters() {
+            
+        }
+    </script>
+    <script src="~/js/theme.js"></script>
+</body>
+</html>

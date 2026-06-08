@@ -1,0 +1,774 @@
+﻿@{
+    ViewData["Title"] = "Кабинет преподавателя";
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/dashboard-styles.css" asp-append-version="true" />
+</head>
+<body class="teacher-body">
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+
+    <header class="teacher-header">
+        <div class="header-top">
+            <div class="header-container">
+                <div class="logo-nav-container">
+                    <img src="/images/logo.png" alt="AsFi" class="logo-img" onerror="this.style.display='none';">
+                    <div class="teacher-nav-tabs">
+                        <button class="teacher-nav-tab active" data-section="lectures"><i class="bi bi-journal-bookmark"></i> Лекции</button>
+                        <button class="teacher-nav-tab" data-section="tests"><i class="bi bi-journal-text"></i> Тесты</button>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-container">
+                        <input type="text" class="teacher-search-input" placeholder="Поиск..." id="searchInput">
+                        <i class="bi bi-search search-icon"></i>
+                    </div>
+                    <div class="teacher-user-info" id="userInfo" style="cursor:pointer" onclick="window.location.href='/Teacher/Profile'">
+                        <div id="userAvatarContainer" style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px;">
+                            <i class="bi bi-person-circle user-icon" id="defaultUserIcon"></i>
+                            <img id="userAvatarImg" style="display:none; width:20px; height:20px; border-radius:50%; object-fit:cover;" />
+                        </div>
+                        <span id="userName">Загрузка...</span>
+                    </div>
+                    <button type="button" class="teacher-btn-purple" data-bs-toggle="modal" data-bs-target="#generateCodeModal"><i class="bi bi-key"></i> Кодовые слова</button>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i> Выйти</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container-fluid">
+            <div class="row">
+                
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="filter-sticky-container">
+                        <div class="filter-card">
+                            <div class="filter-card-header">
+                                <h5><i class="bi bi-funnel"></i> Фильтрация</h5>
+                            </div>
+                            <div class="filter-card-body">
+                                <div id="lectures-filter" class="filter-section active">
+                                    <div class="mb-3">
+                                        <label class="form-label">Предмет</label>
+                                        <div id="lecture-subjects-filter" class="filter-options"></div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Раздел</label>
+                                        <div id="lecture-sections-filter" class="filter-options"></div>
+                                    </div>
+                                    <button class="teacher-btn-purple w-100" id="clearLectureFilters">Сбросить фильтры</button>
+                                </div>
+                                <div id="tests-filter" class="filter-section">
+                                    <div class="mb-3">
+                                        <label class="form-label">Предмет</label>
+                                        <div id="test-subjects-filter" class="filter-options"></div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Тема теста</label>
+                                        <div id="test-topics-filter" class="filter-options"></div>
+                                    </div>
+                                    <button class="teacher-btn-purple w-100" id="clearTestFilters">Сбросить фильтры</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="col-lg-9 col-md-8">
+                    <div class="d-flex justify-content-end mb-4">
+                        <div class="section-buttons lectures-buttons active">
+                            <button class="teacher-btn-purple" data-bs-toggle="modal" data-bs-target="#createLectureModal"><i class="bi bi-plus-lg"></i> Создать лекцию</button>
+                        </div>
+                        <div class="section-buttons tests-buttons">
+                            <button class="teacher-btn-purple" data-bs-toggle="modal" data-bs-target="#createTestModal"><i class="bi bi-plus-lg"></i> Создать тест</button>
+                        </div>
+                    </div>
+
+                    <div id="lectures-section" class="section-content active">
+                        <div class="teacher-card">
+                            <div class="teacher-card-body">
+                                <div id="lectures-list"><div class="empty-state">Загрузка лекций...</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tests-section" class="section-content">
+                        <div class="teacher-card">
+                            <div class="teacher-card-body">
+                                <div id="tests-list"><div class="empty-state">Загрузка тестов...</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    
+    <div class="modal fade" id="createLectureModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title text-white">Создать лекцию</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="createLectureForm">
+                        <div class="mb-3">
+                            <label class="form-label">Предмет</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="lectureSubjectName" required placeholder="Введите название предмета" autocomplete="off" />
+                                <div id="subjectAutocompleteList" class="autocomplete-list" style="display:none;"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Раздел</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="lectureSectionName" required placeholder="Введите название раздела" autocomplete="off" />
+                                <div id="sectionAutocompleteList" class="autocomplete-list" style="display:none;"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Название лекции</label><input type="text" class="form-control" id="lectureTitle" required placeholder="Введите название" /></div>
+                        <div class="mb-3"><label class="form-label">Тип лекции</label><select class="form-control" id="lectureTypeId" required><option value="">Выберите тип</option><option value="1">Лекция (текст)</option><option value="2">Видео</option><option value="3">Презентация</option></select></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button><button type="submit" form="createLectureForm" class="teacher-btn-purple">Создать</button></div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal fade" id="createTestModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title text-white">Создать тест</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="createTestForm">
+                        <div class="mb-3">
+                            <label class="form-label">Предмет</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="testSubjectName" required placeholder="Введите название предмета" autocomplete="off" />
+                                <div id="testSubjectAutocompleteList" class="autocomplete-list" style="display:none;"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Название темы (можно новую)</label><div class="input-group"><input type="text" class="form-control" id="testTopicName" required placeholder="Введите тему" autocomplete="off" /><div id="topicAutocompleteList" class="autocomplete-list" style="display:none;"></div></div></div>
+                        <div class="mb-3"><label class="form-label">Название теста</label><input type="text" class="form-control" id="testTitle" required placeholder="Введите название" /></div>
+                        <div class="mb-3"><label class="form-label">Время (минут)</label><input type="number" class="form-control" id="testTimeLimit" min="1" value="30" required /></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button><button type="submit" form="createTestForm" class="teacher-btn-purple">Создать</button></div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal fade teacher-modal" id="availabilityModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-white">Предоставить доступ к тесту</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="availabilityForm" class="teacher-form">
+                        <input type="hidden" id="availabilityTestId" />
+                        <div class="mb-3"><label class="form-label">Группа</label><select class="form-control" id="availabilityGroupId" required><option value="">Выберите группу</option></select></div>
+                        <div class="mb-3"><label class="form-label">Дата и время начала</label><input type="datetime-local" class="form-control" id="availabilityStartDate" required /></div>
+                        <div class="mb-3"><label class="form-label">Дата и время окончания</label><input type="datetime-local" class="form-control" id="availabilityEndDate" required /></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button><button type="submit" form="availabilityForm" class="teacher-btn-success">Применить</button></div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal fade teacher-modal" id="lectureAvailabilityModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-white">Предоставить доступ к лекции</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="lectureAvailabilityForm" class="teacher-form">
+                        <input type="hidden" id="lectureAvailabilityLectureId" />
+                        <div class="mb-3"><label class="form-label">Группа</label><select class="form-control" id="lectureAvailabilityGroupId" required><option value="">Выберите группу</option></select></div>
+                        <div class="mb-3"><label class="form-label">Дата и время начала</label><input type="datetime-local" class="form-control" id="lectureAvailabilityStartDate" required /></div>
+                        <div class="mb-3"><label class="form-label">Дата и время окончания</label><input type="datetime-local" class="form-control" id="lectureAvailabilityEndDate" required /></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button><button type="submit" form="lectureAvailabilityForm" class="teacher-btn-success">Применить</button></div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal fade teacher-modal" id="generateCodeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title text-white"><i class="bi bi-key me-2"></i>Генерация кодовых слов</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs mb-3" id="codeTabs" role="tablist">
+                        <li class="nav-item"><button class="nav-link active" id="generate-tab" data-bs-toggle="tab" data-bs-target="#generate-content" type="button"><i class="bi bi-plus-circle"></i> Создать новый код</button></li>
+                        <li class="nav-item"><button class="nav-link" id="codes-tab" data-bs-toggle="tab" data-bs-target="#codes-content" type="button" onclick="loadInviteCodes()"><i class="bi bi-list"></i> Активные коды</button></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="generate-content">
+                            <div class="mb-3"><label for="codeGroupSelect" class="form-label">Выберите группу:</label><select class="form-control" id="codeGroupSelect"><option value="">Выберите группу...</option></select></div>
+                            <div id="codeGenerationResult" style="display:none;" class="alert alert-success"></div>
+                            <button class="teacher-btn-purple w-100" id="generateCodeBtn" onclick="generateInviteCode()">Создать кодовое слово</button>
+                        </div>
+                        <div class="tab-pane fade" id="codes-content">
+                            <div id="codesLoading" class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2 text-white">Загрузка...</p></div>
+                            <div id="codesList" style="display:none;"></div>
+                            <div id="noCodesMessage" style="display:none;" class="text-center py-4"><i class="bi bi-key" style="font-size:3rem;"></i><p>Нет активных кодов</p></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+                
+        window.editLecture = (id) => { window.location.href = `/Teacher/EditLecture/${id}`; };
+        window.editTest = (id) => { window.location.href = `/Teacher/EditTest/${id}`; };
+        window.deleteLecture = (id) => { if(confirm('Удалить лекцию?')) fetch('/Teacher/DeleteLecture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }).then(() => location.reload()); };
+        window.deleteTest = (id) => { if(confirm('Удалить тест?')) fetch('/Teacher/DeleteTest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }).then(() => location.reload()); };
+        window.makeLectureAvailable = (id) => { currentLectureId = id; document.getElementById('lectureAvailabilityLectureId').value = id; setDefaultDates(); new bootstrap.Modal(document.getElementById('lectureAvailabilityModal')).show(); };
+        window.makeTestAvailable = (id) => { currentTestId = id; document.getElementById('availabilityTestId').value = id; setDefaultDates(); new bootstrap.Modal(document.getElementById('availabilityModal')).show(); };
+
+        
+        let lectures = [];
+        let tests = [];
+        let subjects = [];
+        let sections = [];
+        let topicsList = [];
+        let lectureTypes = [];
+        let groups = [];
+
+        let activeLectureFilter = { subjectId: null, sectionId: null };
+        let activeTestFilter = { subjectId: null, topic: null };
+        let currentSection = 'lectures';
+
+        let itemToDelete = null, itemTypeToDelete = null;
+        let currentTestId = null, currentLectureId = null;
+
+        const lecturesListDiv = document.getElementById('lectures-list');
+        const testsListDiv = document.getElementById('tests-list');
+        const searchInput = document.getElementById('searchInput');
+        const userNameSpan = document.getElementById('userName');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadCurrentUser();
+            await loadSubjectsAndSections();
+            await loadTopics();
+            await loadLectureTypes();
+            await loadGroups();
+            await loadLectures();
+            await loadTests();
+
+            setupAutocomplete('lectureSubjectName', 'subjectAutocompleteList', subjects, 'name');
+            setupAutocomplete('lectureSectionName', 'sectionAutocompleteList', sections, 'name');
+            setupAutocomplete('testSubjectName', 'testSubjectAutocompleteList', subjects, 'name');
+            setupAutocomplete('testTopicName', 'topicAutocompleteList', topicsList, 'name');
+
+            initEventListeners();
+            initConfirmDeleteEvents();
+            initModalEvents();
+            fillGroupSelects();
+            renderLectures();
+            renderTests();
+            updateFilterOptions();
+            hideExpiredAvailabilities();
+        });
+
+        async function loadCurrentUser() {
+            const res = await fetch('/Teacher/GetCurrentUser');
+            const data = await res.json();
+            if (data.success) {
+                let name = data.firstName;
+                if (data.patronymic) name += ' ' + data.patronymic;
+                name += ' ' + data.lastName;
+                userNameSpan.innerText = name;
+                if (data.avatarUrl) {
+                    document.getElementById('defaultUserIcon').style.display = 'none';
+                    document.getElementById('userAvatarImg').src = data.avatarUrl;
+                    document.getElementById('userAvatarImg').style.display = 'block';
+                } else {
+                    document.getElementById('defaultUserIcon').style.display = 'block';
+                    document.getElementById('userAvatarImg').style.display = 'none';
+                }
+            } else userNameSpan.innerText = 'Преподаватель';
+        }
+
+        async function loadSubjectsAndSections() {
+            subjects = await (await fetch('/Teacher/GetSubjects')).json();
+            sections = await (await fetch('/Teacher/GetSections')).json();
+        }
+
+        async function loadTopics() {
+            topicsList = await (await fetch('/Teacher/GetTopics')).json();
+        }
+
+        async function loadLectureTypes() {
+            lectureTypes = await (await fetch('/Teacher/GetLectureTypes')).json();
+        }
+
+        async function loadLectures() {
+            const res = await fetch('/Teacher/GetLectures');
+            lectures = await res.json();
+            renderLectures();
+            updateFilterOptions();
+        }
+
+        async function loadTests() {
+            const res = await fetch('/Teacher/GetTests');
+            tests = await res.json();
+            renderTests();
+            updateFilterOptions();
+        }
+
+        async function loadGroups() {
+            const res = await fetch('/Teacher/GetGroups');
+            groups = await res.json();
+        }
+
+        function fillGroupSelects() {
+            const testGroupSelect = document.getElementById('availabilityGroupId');
+            const lectureGroupSelect = document.getElementById('lectureAvailabilityGroupId');
+            const codeGroupSelect = document.getElementById('codeGroupSelect');
+            const options = '<option value="">Выберите группу</option>' + groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+            if (testGroupSelect) testGroupSelect.innerHTML = options;
+            if (lectureGroupSelect) lectureGroupSelect.innerHTML = options;
+            if (codeGroupSelect) codeGroupSelect.innerHTML = '<option value="">Выберите группу...</option>' + groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+        }
+
+        function renderLectures() {
+            let filtered = lectures.filter(l => {
+                if (activeLectureFilter.subjectId && l.subjectId != activeLectureFilter.subjectId) return false;
+                if (activeLectureFilter.sectionId && l.sectionId != activeLectureFilter.sectionId) return false;
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm && !l.title.toLowerCase().includes(searchTerm)) return false;
+                return true;
+            });
+            if (!filtered.length) {
+                lecturesListDiv.innerHTML = '<div class="empty-state"><i class="bi bi-journal-bookmark"></i><h5>Нет лекций</h5></div>';
+                return;
+            }
+            const bySubject = {};
+            filtered.forEach(l => {
+                const subjName = getSubjectName(l.subjectId);
+                if (!bySubject[subjName]) bySubject[subjName] = {};
+                const secName = getSectionName(l.sectionId);
+                if (!bySubject[subjName][secName]) bySubject[subjName][secName] = [];
+                bySubject[subjName][secName].push(l);
+            });
+            let html = '';
+            for (const subjectName in bySubject) {
+                html += `<div class="subject-group"><h4 class="text-white">${escapeHtml(subjectName)}</h4>`;
+                for (const sectionName in bySubject[subjectName]) {
+                    html += `<div class="section-group"><h5 class="text-white">${escapeHtml(sectionName)}</h5>`;
+                    bySubject[subjectName][sectionName].forEach(l => {
+                        const isNew = (new Date(l.createdAt) > new Date(Date.now() - 24*3600*1000));
+                        html += `
+                            <div class="lecture-item question-card" onclick="editLecture(${l.id})">
+                                <div class="d-flex justify-content-between">
+                                    <div><h6>${escapeHtml(l.title)} ${isNew ? '<span class="new-badge">Новая</span>' : ''}</h6>
+                                    <div><small>Тип: ${getLectureTypeName(l.lectureTypeId)}</small></div></div>
+                                    <div class="action-buttons">
+                                        <button class="teacher-btn-success btn-sm" onclick="event.stopPropagation(); makeLectureAvailable(${l.id})"><i class="bi bi-share"></i></button>
+                                        <button class="teacher-btn-danger btn-sm" onclick="event.stopPropagation(); deleteLecture(${l.id})"><i class="bi bi-trash"></i></button>
+                                    </div>
+                                </div>
+                                <div id="lecture-avail-${l.id}" class="mt-2 small"></div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            }
+            lecturesListDiv.innerHTML = html;
+            filtered.forEach(l => loadLectureAvailability(l.id));
+        }
+
+        function renderTests() {
+            let filtered = tests.filter(t => {
+                if (activeTestFilter.subjectId && t.subjectId != activeTestFilter.subjectId) return false;
+                if (activeTestFilter.topic && !t.topicName.toLowerCase().includes(activeTestFilter.topic.toLowerCase())) return false;
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm && !t.title.toLowerCase().includes(searchTerm)) return false;
+                return true;
+            });
+            if (!filtered.length) {
+                testsListDiv.innerHTML = '<div class="empty-state"><i class="bi bi-journal-text"></i><h5>Нет тестов</h5></div>';
+                return;
+            }
+            const bySubject = {};
+            filtered.forEach(t => {
+                const subjName = getSubjectName(t.subjectId);
+                if (!bySubject[subjName]) bySubject[subjName] = [];
+                bySubject[subjName].push(t);
+            });
+            let html = '';
+            for (const subjectName in bySubject) {
+                html += `<div class="subject-group"><h4 class="text-white">${escapeHtml(subjectName)}</h4>`;
+                bySubject[subjectName].forEach(t => {
+                    const isNew = (new Date(t.createdAt) > new Date(Date.now() - 24*3600*1000));
+                    html += `
+                        <div class="test-item question-card" onclick="editTest(${t.id})">
+                            <div class="d-flex justify-content-between">
+                                <div><h6>${escapeHtml(t.title)} ${isNew ? '<span class="new-badge">Новый</span>' : ''}</h6>
+                                <div><small>Тема: ${escapeHtml(t.topicName)} | Время: ${t.timeLimitMinutes} мин</small></div></div>
+                                <div class="action-buttons">
+                                    <button class="teacher-btn-success btn-sm" onclick="event.stopPropagation(); makeTestAvailable(${t.id})"><i class="bi bi-share"></i></button>
+                                    <button class="teacher-btn-danger btn-sm" onclick="event.stopPropagation(); deleteTest(${t.id})"><i class="bi bi-trash"></i></button>
+                                </div>
+                            </div>
+                            <div id="test-avail-${t.id}" class="mt-2 small"></div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            testsListDiv.innerHTML = html;
+            filtered.forEach(t => loadTestAvailability(t.id));
+        }
+
+                function hideExpiredAvailabilities() {
+            const now = new Date();
+            const availBlocks = document.querySelectorAll('[id^="lecture-avail-"], [id^="test-avail-"]');
+            availBlocks.forEach(block => {
+                const text = block.innerText;
+                if (!text) return;
+                
+                const dateMatches = text.match(/\d{2}\.\d{2}\.\d{4}/g);
+                if (dateMatches && dateMatches.length > 0) {
+                   
+                    const lastDateStr = dateMatches[dateMatches.length - 1];
+                    const parts = lastDateStr.split('.');
+                    const endDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                    if (endDate < now) {
+                        block.style.display = 'none';
+                        
+                        const parentCard = block.closest('.lecture-item, .test-item');
+                        
+                    }
+                }
+            });
+        }
+
+        function getSubjectName(id) { const s = subjects.find(s => s.id == id); return s ? s.name : '?'; }
+        function getSectionName(id) { const s = sections.find(s => s.id == id); return s ? s.name : '?'; }
+        function getLectureTypeName(id) { const t = lectureTypes.find(t => t.id == id); return t ? t.name : '?'; }
+        function escapeHtml(str) { return str.replace(/[&<>]/g, m => m == '&' ? '&amp;' : m == '<' ? '&lt;' : m == '>' ? '&gt;' : m); }
+
+        function setupAutocomplete(inputId, listId, data, displayProp) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+            if (!input || !list) return;
+            input.addEventListener('input', () => {
+                const val = input.value.toLowerCase();
+                if (!val) { list.innerHTML = ''; list.style.display = 'none'; return; }
+                const filtered = data.filter(item => item[displayProp].toLowerCase().startsWith(val));
+                if (filtered.length) {
+                    list.innerHTML = filtered.map(item => `<div class="autocomplete-item" data-value="${item.id}" data-name="${escapeHtml(item[displayProp])}">${escapeHtml(item[displayProp])}</div>`).join('');
+                    list.style.display = 'block';
+                    Array.from(list.children).forEach(div => {
+                        div.addEventListener('click', () => {
+                            input.value = div.dataset.name;
+                            input.dataset.id = div.dataset.value;
+                            list.style.display = 'none';
+                        });
+                    });
+                } else { list.innerHTML = ''; list.style.display = 'none'; }
+            });
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !list.contains(e.target)) list.style.display = 'none';
+            });
+        }
+
+        function updateFilterOptions() {
+            const lectureSubjects = [...new Set(lectures.map(l => l.subjectId))];
+            const lectureSubjectsDiv = document.getElementById('lecture-subjects-filter');
+            lectureSubjectsDiv.innerHTML = lectureSubjects.map(id => `<button class="filter-btn ${activeLectureFilter.subjectId == id ? 'active' : ''}" data-subject="${id}">${getSubjectName(id)}</button>`).join('');
+            document.querySelectorAll('#lecture-subjects-filter .filter-btn').forEach(btn => btn.addEventListener('click', () => {
+                activeLectureFilter.subjectId = btn.dataset.subject == '' ? null : parseInt(btn.dataset.subject);
+                renderLectures(); updateFilterOptions();
+            }));
+            const lectureSections = [...new Set(lectures.map(l => l.sectionId))];
+            const lectureSectionsDiv = document.getElementById('lecture-sections-filter');
+            lectureSectionsDiv.innerHTML = lectureSections.map(id => `<button class="filter-btn ${activeLectureFilter.sectionId == id ? 'active' : ''}" data-section="${id}">${getSectionName(id)}</button>`).join('');
+            document.querySelectorAll('#lecture-sections-filter .filter-btn').forEach(btn => btn.addEventListener('click', () => {
+                activeLectureFilter.sectionId = btn.dataset.section == '' ? null : parseInt(btn.dataset.section);
+                renderLectures(); updateFilterOptions();
+            }));
+            const testSubjects = [...new Set(tests.map(t => t.subjectId))];
+            const testSubjectsDiv = document.getElementById('test-subjects-filter');
+            testSubjectsDiv.innerHTML = testSubjects.map(id => `<button class="filter-btn ${activeTestFilter.subjectId == id ? 'active' : ''}" data-subject="${id}">${getSubjectName(id)}</button>`).join('');
+            document.querySelectorAll('#test-subjects-filter .filter-btn').forEach(btn => btn.addEventListener('click', () => {
+                activeTestFilter.subjectId = btn.dataset.subject == '' ? null : parseInt(btn.dataset.subject);
+                renderTests(); updateFilterOptions();
+            }));
+            const testTopics = [...new Set(tests.map(t => t.topicName))];
+            const testTopicsDiv = document.getElementById('test-topics-filter');
+            testTopicsDiv.innerHTML = testTopics.map(topic => `<button class="filter-btn ${activeTestFilter.topic == topic ? 'active' : ''}" data-topic="${topic}">${escapeHtml(topic)}</button>`).join('');
+            document.querySelectorAll('#test-topics-filter .filter-btn').forEach(btn => btn.addEventListener('click', () => {
+                activeTestFilter.topic = btn.dataset.topic == '' ? null : btn.dataset.topic;
+                renderTests(); updateFilterOptions();
+            }));
+        }
+
+        document.getElementById('clearLectureFilters').addEventListener('click', () => { activeLectureFilter = { subjectId: null, sectionId: null }; renderLectures(); updateFilterOptions(); });
+        document.getElementById('clearTestFilters').addEventListener('click', () => { activeTestFilter = { subjectId: null, topic: null }; renderTests(); updateFilterOptions(); });
+        searchInput.addEventListener('input', () => { if (currentSection === 'lectures') renderLectures(); else renderTests(); });
+
+                document.querySelectorAll('.teacher-nav-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const section = this.dataset.section;
+                currentSection = section;
+                document.querySelectorAll('.teacher-nav-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.section-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(section + '-section').classList.add('active');
+
+                
+                document.querySelectorAll('.filter-section').forEach(f => f.classList.remove('active'));
+                document.getElementById(section + '-filter').classList.add('active');
+
+                document.querySelectorAll('.section-buttons').forEach(b => b.classList.remove('active'));
+                document.querySelector(`.${section}-buttons`).classList.add('active');
+            });
+        });
+
+        const createLectureForm = document.getElementById('createLectureForm');
+        createLectureForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const subjectName = document.getElementById('lectureSubjectName').value.trim();
+            const sectionName = document.getElementById('lectureSectionName').value.trim();
+            const title = document.getElementById('lectureTitle').value.trim();
+            const lectureTypeId = parseInt(document.getElementById('lectureTypeId').value);
+            if (!subjectName || !sectionName || !title || !lectureTypeId) { showNotification('Заполните все поля', 'danger'); return; }
+            let subjectId = subjects.find(s => s.name === subjectName)?.id;
+            if (!subjectId) {
+                const res = await fetch('/Teacher/CreateSubject', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: subjectName }) });
+                const data = await res.json();
+                if (data.success) { subjectId = data.id; subjects.push({ id: subjectId, name: subjectName }); }
+                else { showNotification('Ошибка создания предмета', 'danger'); return; }
+            }
+            let sectionId = sections.find(s => s.name === sectionName)?.id;
+            if (!sectionId) {
+                const res = await fetch('/Teacher/CreateSection', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: sectionName }) });
+                const data = await res.json();
+                if (data.success) { sectionId = data.id; sections.push({ id: sectionId, name: sectionName }); }
+                else { showNotification('Ошибка создания раздела', 'danger'); return; }
+            }
+            const data = { SubjectId: subjectId, SectionId: sectionId, Title: title, LectureTypeId: lectureTypeId };
+            const res = await fetch('/Teacher/CreateLecture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            const result = await res.json();
+            if (result.success) {
+                bootstrap.Modal.getInstance(document.getElementById('createLectureModal')).hide();
+                createLectureForm.reset();
+                await loadLectures();
+                showNotification('Лекция создана', 'success');
+            } else showNotification(result.message, 'danger');
+        });
+
+        const createTestForm = document.getElementById('createTestForm');
+        createTestForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const subjectName = document.getElementById('testSubjectName').value.trim();
+            const topicName = document.getElementById('testTopicName').value.trim();
+            const title = document.getElementById('testTitle').value.trim();
+            const timeLimit = parseInt(document.getElementById('testTimeLimit').value);
+            if (!subjectName || !topicName || !title || !timeLimit) { showNotification('Заполните все поля', 'danger'); return; }
+            let subjectId = subjects.find(s => s.name === subjectName)?.id;
+            if (!subjectId) {
+                const res = await fetch('/Teacher/CreateSubject', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: subjectName }) });
+                const data = await res.json();
+                if (data.success) { subjectId = data.id; subjects.push({ id: subjectId, name: subjectName }); }
+                else { showNotification('Ошибка создания предмета', 'danger'); return; }
+            }
+            let topicId = topicsList.find(t => t.name === topicName)?.id;
+            if (!topicId) {
+                const res = await fetch('/Teacher/CreateTopic', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: topicName, subjectId: subjectId }) });
+                const data = await res.json();
+                if (data.success) { topicId = data.id; topicsList.push({ id: topicId, name: topicName }); }
+                else { showNotification('Ошибка создания темы', 'danger'); return; }
+            }
+            const data = { SubjectId: subjectId, TopicName: topicName, Title: title, TimeLimitMinutes: timeLimit };
+            const res = await fetch('/Teacher/CreateTest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            const result = await res.json();
+            if (result.success) {
+                bootstrap.Modal.getInstance(document.getElementById('createTestModal')).hide();
+                createTestForm.reset();
+                await loadTests();
+                showNotification('Тест создан', 'success');
+            } else showNotification(result.message, 'danger');
+        });
+
+        function editLecture(id) { window.location.href = `/Teacher/EditLecture/${id}`; }
+        function editTest(id) { window.location.href = `/Teacher/EditTest/${id}`; }
+        function deleteLecture(id) { itemToDelete = id; itemTypeToDelete = 'lecture'; new bootstrap.Modal(document.getElementById('confirmLectureDeleteModal')).show(); }
+        function deleteTest(id) { itemToDelete = id; itemTypeToDelete = 'test'; new bootstrap.Modal(document.getElementById('confirmDeleteModal')).show(); }
+        function makeTestAvailable(testId) { currentTestId = testId; document.getElementById('availabilityTestId').value = testId; setDefaultDates(); new bootstrap.Modal(document.getElementById('availabilityModal')).show(); }
+        function makeLectureAvailable(lectureId) { currentLectureId = lectureId; document.getElementById('lectureAvailabilityLectureId').value = lectureId; setDefaultDates(); new bootstrap.Modal(document.getElementById('lectureAvailabilityModal')).show(); }
+
+        async function loadTestAvailability(testId) {
+            const res = await fetch(`/Teacher/GetTestAvailability/${testId}`);
+            const items = await res.json();
+            const container = document.getElementById(`test-avail-${testId}`);
+            if (items.length) {
+                let html = '<div class="mt-2 small text-white-50">Доступен для:</div>';
+                items.forEach(i => html += `<div>${i.groupName}: ${new Date(i.startDate).toLocaleDateString()} - ${new Date(i.endDate).toLocaleDateString()}</div>`);
+                container.innerHTML = html;
+            } else container.innerHTML = '';
+        }
+        async function loadLectureAvailability(lectureId) {
+            const res = await fetch(`/Teacher/GetLectureAvailability/${lectureId}`);
+            const items = await res.json();
+            const container = document.getElementById(`lecture-avail-${lectureId}`);
+            if (items.length) {
+                let html = '<div class="mt-2 small text-white-50">Доступна для:</div>';
+                items.forEach(i => html += `<div>${i.groupName}: ${new Date(i.startDate).toLocaleDateString()} - ${new Date(i.endDate).toLocaleDateString()}</div>`);
+                container.innerHTML = html;
+            } else container.innerHTML = '';
+        }
+
+        document.getElementById("availabilityForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = {
+                TestId: parseInt(document.getElementById('availabilityTestId').value),
+                GroupId: parseInt(document.getElementById('availabilityGroupId').value),
+                StartDate: new Date(document.getElementById('availabilityStartDate').value),
+                EndDate: new Date(document.getElementById('availabilityEndDate').value)
+            };
+            const res = await fetch('/Teacher/MakeTestAvailable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+            const result = await res.json();
+            if (result.success) {
+                bootstrap.Modal.getInstance(document.getElementById('availabilityModal')).hide();
+                loadTestAvailability(formData.TestId);
+                showNotification('Доступ предоставлен', 'success');
+                hideExpiredAvailabilities();
+            } else showNotification(result.message, 'danger');
+        });
+
+        document.getElementById("lectureAvailabilityForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = {
+                LectureId: parseInt(document.getElementById('lectureAvailabilityLectureId').value),
+                GroupId: parseInt(document.getElementById('lectureAvailabilityGroupId').value),
+                StartDate: new Date(document.getElementById('lectureAvailabilityStartDate').value),
+                EndDate: new Date(document.getElementById('lectureAvailabilityEndDate').value)
+            };
+            const res = await fetch('/Teacher/MakeLectureAvailable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+            const result = await res.json();
+            if (result.success) {
+                bootstrap.Modal.getInstance(document.getElementById('lectureAvailabilityModal')).hide();
+                loadLectureAvailability(formData.LectureId);
+                showNotification('Доступ предоставлен', 'success');
+                hideExpiredAvailabilities();
+            } else showNotification(result.message, 'danger');
+        });
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            if (itemToDelete && itemTypeToDelete === 'test') {
+                const res = await fetch('/Teacher/DeleteTest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: itemToDelete }) });
+                const result = await res.json();
+                if (result.success) { await loadTests(); showNotification('Тест удалён', 'success'); } else showNotification(result.message, 'danger');
+                bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal')).hide();
+                itemToDelete = null;
+            }
+        });
+        document.getElementById('confirmLectureDeleteBtn').addEventListener('click', async () => {
+            if (itemToDelete && itemTypeToDelete === 'lecture') {
+                const res = await fetch('/Teacher/DeleteLecture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: itemToDelete }) });
+                const result = await res.json();
+                if (result.success) { await loadLectures(); showNotification('Лекция удалена', 'success'); } else showNotification(result.message, 'danger');
+                bootstrap.Modal.getInstance(document.getElementById('confirmLectureDeleteModal')).hide();
+                itemToDelete = null;
+            }
+        });
+
+        function setDefaultDates() {
+            const now = new Date();
+            const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
+            const f = d => d.toISOString().slice(0,16);
+            const s = document.getElementById('availabilityStartDate'); if(s) s.value = f(now);
+            const e = document.getElementById('availabilityEndDate'); if(e) e.value = f(tomorrow);
+            const ls = document.getElementById('lectureAvailabilityStartDate'); if(ls) ls.value = f(now);
+            const le = document.getElementById('lectureAvailabilityEndDate'); if(le) le.value = f(tomorrow);
+        }
+
+        async function generateInviteCode() {
+            const groupId = document.getElementById('codeGroupSelect').value;
+            if (!groupId) { showNotification('Выберите группу', 'danger'); return; }
+            try {
+                const response = await fetch(`/Teacher/GenerateGroupInviteCode/${groupId}`);
+                const result = await response.json();
+                if (result.success) {
+                    const div = document.getElementById('codeGenerationResult');
+                    div.innerHTML = `<strong>Код:</strong> ${result.code}<br><strong>Группа:</strong> ${result.groupName}<br><strong>Действителен до:</strong> ${result.expiresAt}<br><button class="btn btn-sm btn-success mt-2" onclick="copyCodeToClipboard('${result.code}')">Скопировать</button>`;
+                    div.style.display = 'block';
+                    await loadInviteCodes();
+                    document.getElementById('codes-tab').click();
+                } else showNotification(result.message, 'danger');
+            } catch (error) { showNotification('Ошибка сети', 'danger'); }
+        }
+
+        async function loadInviteCodes() {
+            const res = await fetch('/Teacher/GetGroupInviteCodes');
+            const result = await res.json();
+            const loading = document.getElementById('codesLoading');
+            const codesDiv = document.getElementById('codesList');
+            const noCodes = document.getElementById('noCodesMessage');
+            loading.style.display = 'none';
+            if (result.success && result.inviteCodes.length) {
+                let html = '';
+                result.inviteCodes.forEach(c => { html += `<div class="border p-2 mb-2"><strong>${c.code}</strong><br>Группа: ${c.groupName}<br>Действителен до: ${c.expiresAt}<br><button class="btn btn-sm btn-danger" onclick="revokeInviteCode(${c.id})">Отозвать</button></div>`; });
+                codesDiv.innerHTML = html;
+                codesDiv.style.display = 'block';
+                noCodes.style.display = 'none';
+            } else { codesDiv.style.display = 'none'; noCodes.style.display = 'block'; }
+        }
+        async function revokeInviteCode(id) {
+            if (confirm('Отозвать код?')) {
+                await fetch(`/Teacher/RevokeInviteCode/${id}`, { method: 'POST' });
+                await loadInviteCodes();
+                showNotification('Код отозван', 'success');
+            }
+        }
+        function copyCodeToClipboard(code) { navigator.clipboard.writeText(code); showNotification('Код скопирован', 'success'); }
+
+        function showNotification(msg, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+            alertDiv.style.zIndex = 9999;
+            alertDiv.innerHTML = msg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 4000);
+        }
+
+        function initEventListeners() {}
+        function initModalEvents() {}
+        function initConfirmDeleteEvents() {}
+    </script>
+
+    <script src="~/js/theme.js"></script>
+
+</body>
+</html>

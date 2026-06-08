@@ -1,0 +1,313 @@
+﻿@model AsFi.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Регистрация";
+    Layout = "_AuthLayout";
+}
+
+<link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+
+<div class="auth-container">
+    <div class="slider">
+        <img class="slider-img active" src="https://soyuzmash.ru/upload/iblock/ac4/ac49bf3af819c461500677ab18d7a934.jpeg" alt="Slide 1" />
+        <img class="slider-img" src="https://naked-science.ru/wp-content/uploads/2016/06/field_image_pyatstatei.jpg" alt="Slide 2" />
+        <img class="slider-img" src="https://img.freepik.com/premium-photo/abstract-background-350_994728-9.jpg?semt=ais_hybrid&w=740&q=80" alt="Slide 3" />
+        <img class="slider-img" src="https://iteach.vspu.ru/files/2018/07/1515851667_2a6d2b3587837c44552925d5685466a4-1-960x600.jpg" alt="Slide 4" />
+        <img class="slider-img" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Slide 5" />
+    </div>
+
+    <div class="auth-right">
+        <div class="particles" id="particles"></div>
+
+        <form asp-action="Register" method="post" id="registerForm" class="auth-form">
+            <h3>Создание аккаунта</h3>
+
+            
+            <div id="globalErrors" class="alert-danger" style="display: none;"></div>
+
+           
+            <div id="step1" class="step">
+                <div class="form-group">
+                    <label asp-for="LastName" class="form-label">Фамилия</label>
+                    <input asp-for="LastName" class="form-control" placeholder="Только русские буквы" maxlength="50" id="lastNameInput" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                    <small class="char-counter" id="lastname-counter">0/50</small>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="FirstName" class="form-label">Имя</label>
+                    <input asp-for="FirstName" class="form-control" placeholder="Только русские буквы" maxlength="50" id="firstNameInput" />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                    <small class="char-counter" id="firstname-counter">0/50</small>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Patronymic" class="form-label">Отчество (если есть)</label>
+                    <input asp-for="Patronymic" class="form-control" placeholder="Отчество" maxlength="50" />
+                    <span asp-validation-for="Patronymic" class="text-danger"></span>
+                </div>
+
+                <div class="step-buttons">
+                    <button type="button" id="nextStepBtn" class="btn-auth">Далее</button>
+                </div>
+                <p class="auth-link">
+                    Уже есть аккаунт?
+                    <a asp-controller="Account" asp-action="Login">Войти</a>
+                </p>
+            </div>
+
+           
+            <div id="step2" class="step" style="display: none;">
+                <div class="form-group">
+                    <label asp-for="Login" class="form-label">Логин (только цифры)</label>
+                    <input asp-for="Login" class="form-control" placeholder="6 цифр" maxlength="6" id="loginInput" />
+                    <span asp-validation-for="Login" class="text-danger" id="loginError"></span>
+                    <small class="char-counter" id="login-counter">0/6</small>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" placeholder="example@mail.com" id="emailInput" />
+                    <span asp-validation-for="Email" class="text-danger" id="emailError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password" class="form-label">Пароль</label>
+                    <div class="password-field">
+                        <input asp-for="Password" class="form-control" id="passwordField" type="password" placeholder="6-20 символов" maxlength="20" />
+                        <button type="button" class="password-toggle" id="togglePassword">
+                            <i class="bi bi-eye-slash"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                    <small class="char-counter" id="password-counter">0/20</small>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ConfirmPassword" class="form-label">Подтверждение пароля</label>
+                    <div class="password-field">
+                        <input asp-for="ConfirmPassword" class="form-control" id="confirmPasswordField" type="password" placeholder="Повторите пароль" maxlength="20" />
+                        <button type="button" class="password-toggle" id="toggleConfirmPassword">
+                            <i class="bi bi-eye-slash"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    <small class="char-counter" id="confirm-password-counter">0/20</small>
+                </div>
+
+                <div class="step-buttons">
+                    <button type="button" id="prevStepBtn" class="btn-auth" style="background: rgba(255,255,255,0.2);">Назад</button>
+                    <button type="submit" id="submitBtn" class="btn-auth">Создать аккаунт</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            if (!particlesContainer) return;
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 20}s`;
+                particle.style.animationDuration = `${15 + Math.random() * 15}s`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        const slides = document.querySelectorAll('.slider-img');
+        let currentSlide = 0;
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        
+        function setupPasswordToggle(toggleId, fieldId) {
+            const toggle = document.getElementById(toggleId);
+            const field = document.getElementById(fieldId);
+            const icon = toggle?.querySelector('i');
+            if (toggle && field && icon) {
+                toggle.addEventListener('click', function () {
+                    const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+                    field.setAttribute('type', type);
+                    icon.classList.toggle('bi-eye');
+                    icon.classList.toggle('bi-eye-slash');
+                });
+            }
+        }
+
+       
+        function setupCharCounter(inputId, counterId, maxLength) {
+            const input = document.getElementById(inputId);
+            const counter = document.getElementById(counterId);
+            if (input && counter) {
+                input.addEventListener('input', () => {
+                    const len = input.value.length;
+                    counter.textContent = `${len}/${maxLength}`;
+                    if (len >= maxLength) counter.classList.add('warning');
+                    else counter.classList.remove('warning');
+                });
+            }
+        }
+
+        
+        function setupValidation(input, pattern) {
+            if (!input) return;
+            input.addEventListener('input', function(e) {
+                const filtered = e.target.value.replace(pattern, '');
+                if (e.target.value !== filtered) e.target.value = filtered;
+                const counter = document.getElementById(e.target.id + '-counter');
+                if (counter) {
+                    const len = e.target.value.length;
+                    const max = e.target.maxLength;
+                    counter.textContent = `${len}/${max}`;
+                    if (len >= max) counter.classList.add('warning');
+                    else counter.classList.remove('warning');
+                }
+            });
+        }
+
+        function showGlobalError(message) {
+            const errorDiv = document.getElementById('globalErrors');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
+        }
+
+        
+        async function checkEmailExists(email) {
+            if (!email) return false;
+            try {
+                const response = await fetch(`/Account/CheckEmailExists?email=${encodeURIComponent(email)}`);
+                const data = await response.json();
+                return data.exists;
+            } catch { return false; }
+        }
+
+        async function checkLoginExists(login) {
+            if (!login) return false;
+            try {
+                const response = await fetch(`/Account/CheckLoginExists?login=${encodeURIComponent(login)}`);
+                const data = await response.json();
+                return data.exists;
+            } catch { return false; }
+        }
+
+       
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const nextBtn = document.getElementById('nextStepBtn');
+        const prevBtn = document.getElementById('prevStepBtn');
+        const emailInput = document.getElementById('emailInput');
+        const loginInput = document.getElementById('loginInput');
+        const emailErrorSpan = document.getElementById('emailError');
+        const loginErrorSpan = document.getElementById('loginError');
+
+        
+        nextBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const lastName = document.getElementById('lastNameInput').value.trim();
+            const firstName = document.getElementById('firstNameInput').value.trim();
+            if (!lastName || !firstName) {
+                showGlobalError('Заполните фамилию и имя');
+                return;
+            }
+            
+            step1.style.display = 'none';
+            step2.style.display = 'block';
+        });
+
+        prevBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            step2.style.display = 'none';
+            step1.style.display = 'block';
+        });
+
+        
+        let emailCheckTimeout;
+        emailInput?.addEventListener('input', function() {
+            clearTimeout(emailCheckTimeout);
+            emailCheckTimeout = setTimeout(async () => {
+                const email = emailInput.value.trim();
+                if (email) {
+                    const exists = await checkEmailExists(email);
+                    if (exists) {
+                        emailErrorSpan.textContent = 'Этот email уже зарегистрирован';
+                    } else {
+                        emailErrorSpan.textContent = '';
+                    }
+                } else {
+                    emailErrorSpan.textContent = '';
+                }
+            }, 500);
+        });
+
+        
+        let loginCheckTimeout;
+        loginInput?.addEventListener('input', function() {
+            clearTimeout(loginCheckTimeout);
+            loginCheckTimeout = setTimeout(async () => {
+                const login = loginInput.value.trim();
+                if (login.length === 6) {
+                    const exists = await checkLoginExists(login);
+                    if (exists) {
+                        loginErrorSpan.textContent = 'Этот логин уже занят';
+                    } else {
+                        loginErrorSpan.textContent = '';
+                    }
+                } else {
+                    loginErrorSpan.textContent = '';
+                }
+            }, 500);
+        });
+
+        
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            const login = loginInput.value.trim();
+            const email = emailInput.value.trim();
+            if (login.length !== 6) {
+                e.preventDefault();
+                loginErrorSpan.textContent = 'Логин должен состоять из 6 цифр';
+                return;
+            }
+            const emailExists = await checkEmailExists(email);
+            if (emailExists) {
+                e.preventDefault();
+                emailErrorSpan.textContent = 'Этот email уже зарегистрирован';
+                return;
+            }
+            const loginExists = await checkLoginExists(login);
+            if (loginExists) {
+                e.preventDefault();
+                loginErrorSpan.textContent = 'Этот логин уже занят';
+                return;
+            }
+            
+        });
+
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            setInterval(nextSlide, 5000);
+            setupCharCounter('lastNameInput', 'lastname-counter', 50);
+            setupCharCounter('firstNameInput', 'firstname-counter', 50);
+            setupCharCounter('loginInput', 'login-counter', 6);
+            setupCharCounter('passwordField', 'password-counter', 20);
+            setupCharCounter('confirmPasswordField', 'confirm-password-counter', 20);
+            setupValidation(document.getElementById('lastNameInput'), /[^а-яА-ЯёЁ\s-]/g);
+            setupValidation(document.getElementById('firstNameInput'), /[^а-яА-ЯёЁ\s-]/g);
+            setupValidation(document.getElementById('loginInput'), /\D/g);
+            setupPasswordToggle('togglePassword', 'passwordField');
+            setupPasswordToggle('toggleConfirmPassword', 'confirmPasswordField');
+            const firstInput = document.querySelector('#step1 input');
+            if (firstInput) setTimeout(() => firstInput.focus(), 300);
+        });
+    </script>
+}

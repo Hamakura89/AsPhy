@@ -1,0 +1,140 @@
+﻿@model AsFi.Models.DebugInfoDto
+@{
+    ViewData["Title"] = "Отладочная информация";
+}
+
+@* <div class="container mt-4">
+    <h2>Отладочная информация</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Тесты (@Model.Tests.Count)</h4>
+            @if (Model.Tests.Any())
+            {
+                @foreach (var test in Model.Tests)
+                {
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h6>@test.Title</h6>
+                            <small>ID: @test.Id</small>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-warning">Тестов нет</div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <h4>Группы (@Model.Groups.Count)</h4>
+            @if (Model.Groups.Any())
+            {
+                @foreach (var group in Model.Groups)
+                {
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h6>@group.GroupName</h6>
+                            <small>ID: @group.Id</small>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-warning">Групп нет</div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h4>Доступные тесты (@Model.AvailableTests.Count)</h4>
+        @if (Model.AvailableTests.Any())
+        {
+            @foreach (var at in Model.AvailableTests)
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6>@at.TestTitle</h6>
+                        <p>Группа: @at.GroupName</p>
+                        <p>Начало: @at.StartDate</p>
+                        <p>Окончание: @at.EndDate</p>
+                        <small>ID записи: @at.Id</small>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-warning">Нет доступных тестов</div>
+        }
+    </div>
+
+    <div class="mt-4">
+        <h4>Пользователи и их группы (@Model.UsersWithGroups.Count)</h4>
+        @if (Model.UsersWithGroups.Any())
+        {
+            @foreach (var user in Model.UsersWithGroups)
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6>@user.LastName @user.FirstName (Логин: @user.Login)</h6>
+                        <p>
+                            Группы:
+                            @if (user.Groups.Any())
+                            {
+                                @string.Join(", ", user.Groups.Select(g => g.GroupName).ToList())
+                            }
+                            else
+                            {
+                                <span class="text-danger">Нет групп</span>
+                            }
+                        </p>
+                        <small>ID пользователя: @user.Id</small>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-warning">Пользователей нет</div>
+        }
+    </div>
+
+    <div class="mt-4">
+        <button class="btn btn-primary" onclick="createTestData()">
+            Создать тестовые данные
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function createTestData() {
+            try {
+                const response = await fetch('/Teacher/CreateFullTestData', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Тестовые данные созданы успешно!\n' +
+                          `ID студента: ${result.studentId}\n` +
+                          `ID группы: ${result.groupId}\n` +
+                          `ID теста: ${result.testId}\n` +
+                          `ID доступности: ${result.availabilityId}`);
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + result.message);
+                }
+            } catch (error) {
+                alert('Ошибка сети: ' + error.message);
+            }
+        }
+    </script> *@
+}

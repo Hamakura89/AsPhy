@@ -1,0 +1,475 @@
+﻿@model AsFi.Models.Test
+@{
+    ViewData["Title"] = $"Тест: {Model?.Title ?? "Не найден"}";
+    var totalSeconds = Model?.TimeLimitMinutes * 60 ?? 0;
+    var questions = Model?.TestQuestions?.ToList() ?? new List<TestQuestion>();
+    var totalQuestions = questions.Count;
+    var maxPoints = questions.Sum(q => q.Points);
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/dashboard-styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/lecture-view.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+
+    <header class="main-header">
+        <div class="header-top">
+            <div class="header-container">
+                <div class="logo-nav-container">
+                    <img src="/images/logo.png" alt="AsFi" class="logo-img" onerror="this.style.display='none';">
+                    <div class="nav-tabs">
+                        <button class="nav-tab" onclick="window.location.href='/Student/Index'">
+                            <i class="bi bi-journal-bookmark"></i> Лекции
+                        </button>
+                        <button class="nav-tab" onclick="window.location.href='/Student/Index?tab=tests'">
+                            <i class="bi bi-journal-text"></i> Тесты
+                        </button>
+                        <button class="nav-tab" onclick="window.location.href='/Student/TestResults'">
+                            <i class="bi bi-award"></i> Оценки
+                        </button>
+                    </div>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Поиск по названию..." id="searchInput">
+                    <i class="bi bi-search search-icon"></i>
+                </div>
+
+                <div class="header-right">
+                    <div class="user-info" id="userInfo" style="cursor:pointer" onclick="window.location.href='/Student/Profile'">
+                        <div id="userAvatarContainer">
+                            <i class="bi bi-person-circle user-icon" id="defaultUserIcon"></i>
+                            <img id="userAvatarImg" style="display:none; width:20px; height:20px; border-radius:50%; object-fit:cover;" />
+                        </div>
+                        <span id="userName">Загрузка...</span>
+                    </div>
+                    <div id="groupStatusArea"></div>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i> Выйти</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        @if (Model == null)
+        {
+            <div class="alert alert-danger">Тест не найден</div>
+            <a href="/Student/Index" class="btn btn-secondary">На главную</a>
+        }
+        else
+        {
+            <div id="testContent" style="display:none;">
+                <div class="teacher-card mb-4">
+                    <div class="teacher-card-body">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <h1 class="text-white mb-2">@Model.Title</h1>
+                            <div class="timer" id="timerDisplay"></div>
+                        </div>
+                        <div class="d-flex gap-3 mt-3">
+                            <span class="test-info-badge"><i class="bi bi-clock"></i> @Model.TimeLimitMinutes мин</span>
+                            <span class="test-info-badge"><i class="bi bi-star"></i> Макс. баллов: @maxPoints</span>
+                            @if (Model.Topic != null)
+                            {
+                                <span class="test-info-badge"><i class="bi bi-tag"></i> Тема: @Model.Topic.Name</span>
+                                if (Model.Topic.Subject != null)
+                                {
+                                    <span class="test-info-badge"><i class="bi bi-book"></i> Предмет: @Model.Topic.Subject.Name</span>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question-nav" id="questionNav"></div>
+
+                <form id="testForm">
+                    <input type="hidden" id="testId" value="@Model.Id" />
+                    <div id="questionsContainer"></div>
+                    <div class="nav-buttons">
+                        <button type="button" class="btn btn-secondary" id="prevBtn" style="display:none">← Назад</button>
+                        <button type="button" class="btn btn-primary" id="nextBtn">Далее →</button>
+                        <button type="button" class="btn btn-success" id="submitBtn" style="display:none">Сдать тест</button>
+                    </div>
+                </form>
+            </div>
+        }
+    </main>
+
+    <div class="modal fade" id="startModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-white"><i class="bi bi-info-circle"></i> Информация о тесте</h5>
+                </div>
+                <div class="modal-body text-white info-modal">
+                    <p><strong>@Model.Title</strong></p>
+                    <p><i class="bi bi-question-circle"></i> Всего вопросов: <strong>@totalQuestions</strong></p>
+                    <p><i class="bi bi-clock"></i> Время на выполнение: <strong>@Model.TimeLimitMinutes минут</strong></p>
+                    @if (Model.Topic != null)
+                    {
+                        <p><i class="bi bi-tag"></i> Тема: <strong>@Model.Topic.Name</strong></p>
+                        if (Model.Topic.Subject != null)
+                        {
+                            <p><i class="bi bi-book"></i> Предмет: <strong>@Model.Topic.Subject.Name</strong></p>
+                        }
+                    }
+                    <p><i class="bi bi-star-fill"></i> Максимальный балл: <strong>@maxPoints</strong></p>
+                    <hr />
+                    <p class="text-white-50">После начала теста таймер пойдёт. Удачи!</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary" id="startTestBtn">Начать тест</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        
+        let currentGroupName = null;
+        async function loadCurrentUser() {
+            try {
+                const res = await fetch('/Student/GetCurrentUser');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('userName').innerText = `${data.lastName} ${data.firstName}`;
+                    if (data.avatarUrl) {
+                        document.getElementById('defaultUserIcon').style.display = 'none';
+                        document.getElementById('userAvatarImg').src = data.avatarUrl;
+                        document.getElementById('userAvatarImg').style.display = 'inline-block';
+                    }
+                } else {
+                    document.getElementById('userName').innerText = 'Студент';
+                }
+            } catch (error) { document.getElementById('userName').innerText = 'Студент'; }
+        }
+        async function loadUserGroup() {
+            try {
+                const res = await fetch('/Student/GetUserGroup');
+                const data = await res.json();
+                currentGroupName = data.success ? data.groupName : null;
+                document.getElementById('groupStatusArea').innerHTML = currentGroupName 
+                    ? `<div class="user-info" style="background:rgba(123,74,227,0.2);"><i class="bi bi-people-fill"></i><span>${escapeHtml(currentGroupName)}</span></div>`
+                    : `<button type="button" class="btn-join-group" data-bs-toggle="modal" data-bs-target="#joinGroupModal"><i class="bi bi-people"></i> Вступить в группу</button>`;
+            } catch(e) { document.getElementById('groupStatusArea').innerHTML = ''; }
+        }
+        function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>]/g, m => m=='&'?'&amp;':m=='<'?'&lt;':'&gt;'); }
+
+        
+        const questionsData = @Html.Raw(Json.Serialize(questions.Select(q => new {
+            id = q.Id,
+            text = q.QuestionText,
+            points = q.Points,
+            imageUrl = q.ImageUrl,
+            answerOptions = q.AnswerOptions.Select(a => new {
+                id = a.Id,
+                text = a.Text,
+                isCorrect = a.IsCorrect,
+                imageUrl = a.ImageUrl
+            }).ToList()
+        })));
+        const total = questionsData.length;
+        let answers = JSON.parse(localStorage.getItem(`test_${@Model.Id}_answers`) || '{}');
+        let currentIndex = 0;
+        let timerInterval = null;
+        let timeLeft = null;
+        let testStarted = false;
+
+        function getInputTypeForQuestion(question) {
+            const correctCount = question.answerOptions.filter(opt => opt.isCorrect).length;
+            return correctCount > 1 ? 'checkbox' : 'radio';
+        }
+
+        function saveAnswer(questionId, value, isCheckbox, checked) {
+            if (isCheckbox) {
+                let current = answers[questionId] || [];
+                if (checked) {
+                    if (!current.includes(value)) current.push(value);
+                } else {
+                    current = current.filter(v => v !== value);
+                }
+                answers[questionId] = current;
+            } else {
+                answers[questionId] = value;
+            }
+            localStorage.setItem(`test_${@Model.Id}_answers`, JSON.stringify(answers));
+            updateNavHighlight(questionId);
+        }
+
+        function getSavedAnswer(questionId, isCheckbox) {
+            const saved = answers[questionId];
+            if (isCheckbox) {
+                return saved || [];
+            }
+            return saved || null;
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            questionsData.forEach((q, idx) => {
+                const inputType = getInputTypeForQuestion(q);
+                const isCheckbox = inputType === 'checkbox';
+                const saved = getSavedAnswer(q.id, isCheckbox);
+                const div = document.createElement('div');
+                div.className = 'question-card';
+                div.id = `q_${idx}`;
+                div.style.display = idx === 0 ? 'block' : 'none';
+                div.innerHTML = `
+                    <h5>Вопрос ${idx+1} <span class="badge bg-info float-end">${q.points} баллов</span></h5>
+                    <p class="mt-2">${escapeHtml(q.text)}</p>
+                    ${q.imageUrl ? `<img src="${q.imageUrl}" class="question-image" />` : ''}
+                    <div class="answers-list" data-question="${q.id}" data-type="${inputType}">
+                        ${q.answerOptions.map(opt => `
+                            <div class="answer-option" data-value="${opt.id}">
+                                <${isCheckbox ? 'input type="checkbox"' : 'input type="radio"'} name="q_${q.id}" value="${opt.id}" ${isCheckbox ? (saved.includes(opt.id.toString()) ? 'checked' : '') : (saved == opt.id ? 'checked' : '')}>
+                                ${opt.imageUrl ? `<img src="${opt.imageUrl}" style="max-width:50px; max-height:50px; margin-right:10px;">` : ''}
+                                <span>${escapeHtml(opt.text || 'Ответ')}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(div);
+                
+                const inputs = div.querySelectorAll(`input[type="${inputType}"]`);
+                inputs.forEach(inp => {
+                    inp.addEventListener('change', (e) => {
+                        const val = inp.value;
+                        const checked = inp.checked;
+                        saveAnswer(q.id, val, isCheckbox, checked);
+                    });
+                });
+                
+                
+                div.querySelectorAll('.answer-option').forEach(opt => {
+                    opt.addEventListener('click', (e) => {
+                        if (e.target.tagName !== 'INPUT') {
+                            const input = opt.querySelector('input');
+                            if (input) {
+                                if (input.type === 'checkbox') {
+                                    input.checked = !input.checked;
+                                    const event = new Event('change', { bubbles: true });
+                                    input.dispatchEvent(event);
+                                } else {
+                                    input.click();
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+            updateQuestionNumbers();
+            updateNav();
+            showQuestion(currentIndex);
+        }
+
+        function updateNavHighlight(questionId) {
+            const navItems = document.querySelectorAll('.question-nav-item');
+            const idx = questionsData.findIndex(q => q.id == questionId);
+            if (idx !== -1) {
+                navItems[idx].classList.add('answered');
+            }
+        }
+
+        function updateQuestionNumbers() {
+            const container = document.getElementById('questionNav');
+            container.innerHTML = '';
+            for (let i = 0; i < total; i++) {
+                const btn = document.createElement('div');
+                btn.className = 'question-nav-item';
+                btn.innerText = (i+1).toString();
+                if (answers[questionsData[i].id] && (Array.isArray(answers[questionsData[i].id]) ? answers[questionsData[i].id].length > 0 : true)) {
+                    btn.classList.add('answered');
+                }
+                btn.addEventListener('click', () => {
+                    currentIndex = i;
+                    showQuestion(currentIndex);
+                });
+                container.appendChild(btn);
+            }
+        }
+
+        function updateNav() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            if (prevBtn) prevBtn.style.display = currentIndex > 0 ? 'block' : 'none';
+            if (nextBtn) nextBtn.style.display = currentIndex < total - 1 ? 'block' : 'none';
+            if (submitBtn) submitBtn.style.display = currentIndex === total - 1 ? 'block' : 'none';
+            document.querySelectorAll('.question-nav-item').forEach((item, idx) => {
+                item.classList.remove('active');
+                if (idx === currentIndex) item.classList.add('active');
+            });
+        }
+
+        function showQuestion(index) {
+            for (let i = 0; i < total; i++) {
+                const el = document.getElementById(`q_${i}`);
+                if (el) el.style.display = i === index ? 'block' : 'none';
+            }
+            currentIndex = index;
+            updateNav();
+        }
+
+        function startTimer(seconds) {
+            if (timerInterval) clearInterval(timerInterval);
+            timeLeft = seconds;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                if (!testStarted) return;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitTestAutomatically();
+                } else {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    localStorage.setItem(`test_${@Model.Id}_timeLeft`, timeLeft);
+                    const timerDiv = document.getElementById('timerDisplay');
+                    if (timeLeft <= 60) {
+                        timerDiv.classList.add('critical');
+                    } else if (timeLeft <= 300) {
+                        timerDiv.classList.add('warning');
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('timerDisplay').innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        }
+
+        async function submitTest() {
+            if (!confirm('Вы уверены, что хотите завершить тест?')) return;
+            clearInterval(timerInterval);
+            const payload = {
+                testId: @Model.Id,
+                answers: []
+            };
+            for (let q of questionsData) {
+                const isCheckbox = getInputTypeForQuestion(q) === 'checkbox';
+                let answer = answers[q.id];
+                if (answer) {
+                    if (isCheckbox) {
+                        for (let val of answer) {
+                            payload.answers.push({
+                                questionId: q.id,
+                                answerOptionId: val.toString(),
+                                receivedPoints: 0
+                            });
+                        }
+                    } else {
+                        payload.answers.push({
+                            questionId: q.id,
+                            answerOptionId: answer.toString(),
+                            receivedPoints: 0
+                        });
+                    }
+                }
+            }
+            try {
+                const response = await fetch('/Student/SubmitTest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    localStorage.removeItem(`test_${@Model.Id}_answers`);
+                    localStorage.removeItem(`test_${@Model.Id}_timeLeft`);
+                    window.location.href = `/Student/TestResult/${result.result.testResultId}`;
+                } else {
+                    alert('Ошибка: ' + result.message);
+                }
+            } catch (error) {
+                alert('Ошибка сети: ' + error.message);
+            }
+        }
+
+        function submitTestAutomatically() {
+            clearInterval(timerInterval);
+            alert('Время вышло! Тест будет сдан автоматически.');
+            submitTest();
+        }
+
+        function initTest() {
+            document.getElementById('testContent').style.display = 'block';
+            testStarted = true;
+            renderQuestions();
+            const savedTime = localStorage.getItem(`test_${@Model.Id}_timeLeft`);
+            if (savedTime && parseInt(savedTime) > 0) {
+                timeLeft = parseInt(savedTime);
+                updateTimerDisplay();
+                startTimer(timeLeft);
+            } else {
+                timeLeft = @totalSeconds;
+                updateTimerDisplay();
+                startTimer(timeLeft);
+            }
+            updateNav();
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                if (currentIndex > 0) { currentIndex--; showQuestion(currentIndex); }
+            });
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                if (currentIndex < total - 1) { currentIndex++; showQuestion(currentIndex); }
+            });
+            document.getElementById('submitBtn').addEventListener('click', submitTest);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadCurrentUser();
+            await loadUserGroup();
+
+            
+            const hasSavedData = localStorage.getItem(`test_${@Model.Id}_answers`) !== null ||
+                                  localStorage.getItem(`test_${@Model.Id}_timeLeft`) !== null;
+
+            if (hasSavedData) {
+                
+                initTest();
+            } else {
+                
+                const startModal = new bootstrap.Modal(document.getElementById('startModal'));
+                startModal.show();
+                document.getElementById('startTestBtn').addEventListener('click', () => {
+                    startModal.hide();
+                    initTest();
+                });
+            }
+        });
+    </script>
+
+    
+    <div class="modal fade" id="joinGroupModal" tabindex="-1">
+        <div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title text-white">Вступить в группу</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" id="inviteCodeModal" class="form-control" placeholder="Кодовое слово"><div class="invalid-feedback" id="inviteCodeErrorModal"></div></div><div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button><button class="btn btn-primary" id="joinGroupBtnModal">Вступить</button></div></div></div>
+    </div>
+    <script>
+        document.getElementById('joinGroupBtnModal')?.addEventListener('click', async () => {
+            const code = document.getElementById('inviteCodeModal').value.trim();
+            if(!code) return;
+            const res = await fetch('/Student/JoinGroup', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({inviteCode:code}) });
+            const data = await res.json();
+            if(data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('joinGroupModal')).hide();
+                location.reload();
+            } else alert(data.message);
+        });
+    </script>
+</body>
+</html>
