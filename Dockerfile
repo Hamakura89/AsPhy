@@ -1,15 +1,16 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Копируем csproj и восстанавливаем зависимости
-COPY *.csproj .
+# РљРѕРїРёСЂСѓРµРј csproj РёР· РїРѕРґРїР°РїРєРё AsFi
+COPY AsFi/*.csproj ./AsFi/
+WORKDIR /src/AsFi
 RUN dotnet restore
 
-# Копируем всё остальное и собираем проект
-COPY . .
+# РљРѕРїРёСЂСѓРµРј РІРµСЃСЊ РѕСЃС‚Р°Р»СЊРЅРѕР№ РєРѕРґ
+COPY . /src
+WORKDIR /src/AsFi
 RUN dotnet publish -c Release -o /app/publish
 
-# Финальный образ
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
