@@ -2987,11 +2987,10 @@ body {
     overflow-x: auto;
 }
 
-/* ========== АДАПТАЦИЯ ПОД МОБИЛЬНЫЕ УСТРОЙСТВА ========== */
 @media (max-width: 768px) {
-    /* Уменьшаем отступы и размеры шапки */
+
     body {
-        padding-top: 100px; /* Уменьшаем отступ, так как шапка стала компактнее */
+        padding-top: 100px; 
     }
 
     .teacher-header .header-top,
@@ -3025,7 +3024,7 @@ body {
         padding: 6px 12px !important;
         font-size: 13px !important;
     }
-    /* Поисковая строка */
+
     .search-container {
         width: 100%;
         order: 1;
@@ -3036,7 +3035,7 @@ body {
         padding: 8px 35px 8px 12px;
         font-size: 13px;
     }
-    /* Правая часть шапки — группируем в две строки */
+
     .header-right {
         width: 100%;
         display: flex;
@@ -3055,11 +3054,11 @@ body {
         padding: 6px 12px;
         font-size: 12px;
     }
-    /* Кнопка "Кодовые слова" и "Выйти" — в одну строку справа */
+
     .header-right form {
         margin-left: auto;
     }
-    /* Фильтры: кнопка-переключатель */
+
     .filter-toggle-container {
         text-align: right;
         margin-bottom: 15px;
@@ -3077,7 +3076,7 @@ body {
         .filter-toggle-btn i {
             margin-right: 6px;
         }
-    /* По умолчанию на мобильных фильтры скрыты, показываются при активном классе */
+
     .filter-section {
         display: none !important;
     }
@@ -3085,15 +3084,15 @@ body {
         .filter-section.active {
             display: block !important;
         }
-    /* Левая колонка с фильтрами – на мобильных занимает всю ширину */
+
     .col-lg-3, .col-md-4 {
         width: 100%;
     }
-    /* Основная колонка – полная ширина */
+
     .col-lg-9, .col-md-8 {
         width: 100%;
     }
-    /* Карточки вопросов и лекций на мобильных – меньшие отступы */
+
     .question-card, .lecture-item, .test-item {
         padding: 12px;
     }
@@ -3118,7 +3117,7 @@ body {
     .answer-text {
         min-width: 120px;
     }
-    /* Таблицы в лекциях и результатах – горизонтальная прокрутка */
+
     .lecture-content-text,
     .editor-content {
         overflow-x: auto;
@@ -3138,7 +3137,7 @@ body {
         font-size: 14px;
         padding: 8px;
     }
-    /* Модальные окна на мобильных – почти на весь экран */
+
     .modal-dialog {
         margin: 10px;
     }
@@ -3146,13 +3145,13 @@ body {
     .modal-body {
         padding: 15px;
     }
-    /* Боковая панель навигации по вопросам (для EditTest) */
+
     .questions-sidebar {
         max-height: 250px;
         overflow-y: auto;
         margin-bottom: 15px;
     }
-    /* Кнопки действий (сохранить, добавить вопрос) в нижней панели */
+    
     .fixed-bottom-bar {
         padding: 10px 15px;
     }
@@ -3162,17 +3161,17 @@ body {
             padding: 6px 12px;
             font-size: 13px;
         }
-    /* Кнопки "Назад к тестам" и т.п. */
+
     .home-btn {
         padding: 6px 12px;
         font-size: 12px;
     }
-    /* Простые текстовые поля */
+
     .form-control, .question-text-area {
         font-size: 14px;
         padding: 10px 12px;
     }
-    /* Убираем фиксированное позиционирование нижней панели (если мешает) */
+
     .fixed-bottom-bar {
         position: relative;
         margin-top: 20px;
@@ -3181,7 +3180,7 @@ body {
     body {
         padding-bottom: 0;
     }
-    /* Адаптация страницы профиля */
+
     .color-picker {
         width: 35px;
         height: 35px;
@@ -3190,7 +3189,7 @@ body {
 
 /* ========== МОБИЛЬНАЯ АДАПТАЦИЯ (ФИНАЛЬНЫЕ ПРАВКИ) ========== */
 @media (max-width: 768px) {
-    /* Компактное верхнее меню */
+
     .header-container {
         flex-direction: column;
         align-items: stretch;
@@ -3246,7 +3245,6 @@ body {
         font-size: 11px;
     }
 
-    /* Кнопка фильтров */
     .filter-toggle-container {
         text-align: right;
         margin-bottom: 15px;
@@ -3261,20 +3259,18 @@ body {
         font-size: 12px;
     }
 
-    /* Фильтры: по умолчанию скрыты, открываются по кнопке */
     .filter-section {
         display: none !important;
     }
 
         .filter-section.active {
-            display: none !important; /* даже активный фильтр скрыт */
+            display: none !important; 
         }
 
             .filter-section.active.mobile-open {
                 display: block !important;
             }
 
-    /* Отмена фиксированной нижней панели, чтобы не занимала место */
     .fixed-bottom-bar {
         position: relative;
         margin-top: 20px;
@@ -3285,7 +3281,7 @@ body {
         padding-bottom: 0;
     }
 }
-/* Фильтры на мобильных: скрыты по умолчанию, показываются только при активном классе mobile-open */
+
 @media (max-width: 768px) {
     .filter-section.active {
         display: none !important;
@@ -3294,4 +3290,55 @@ body {
         .filter-section.active.mobile-open {
             display: block !important;
         }
+}
+
+select.form-control,
+select.form-control option {
+    background-color: white !important;
+    color: #333 !important;
+}
+
+    select.form-control option:hover,
+    select.form-control option:focus,
+    select.form-control option:active {
+        background-color: #e9ecef !important;
+        color: #333 !important;
+    }
+
+body.dark-theme select.form-control,
+body.dark-theme select.form-control option {
+    background-color: white !important;
+    color: #333 !important;
+}
+
+.teacher-card-body select,
+.modal-body select,
+.edit-test-container select,
+.question-card select,
+select.form-control,
+select.form-select {
+    background-color: white !important;
+    color: #333 !important;
+    border: 1px solid #ccc !important;
+}
+
+    select.form-control option,
+    select.form-select option,
+    .teacher-card-body select option,
+    .modal-body select option {
+        background-color: white !important;
+        color: #333 !important;
+    }
+
+        select.form-control option:hover,
+        select.form-select option:hover,
+        .teacher-card-body select option:hover,
+        .modal-body select option:hover {
+            background-color: #e9ecef !important;
+            color: #333 !important;
+        }
+
+.form-control:not(input):not(textarea) {
+    background-color: white !important;
+    color: #333 !important;
 }
