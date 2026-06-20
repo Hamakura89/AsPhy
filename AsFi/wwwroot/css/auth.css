@@ -529,3 +529,16 @@
     .form-control::placeholder {
         color: rgba(255, 255, 255, 0.5) !important;
     }
+
+/* В auth.css – чтобы перебить стили светлой темы */
+body.light-theme .auth-form .form-control,
+body.light-theme .auth-form input,
+body.light-theme .auth-form textarea {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: white !important;
+    border-color: var(--glass-border) !important;
+}
+
+    body.light-theme .auth-form .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }

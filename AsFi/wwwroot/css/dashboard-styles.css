@@ -1829,9 +1829,182 @@ body {
 }
 
 /* Светлая тема – все тексты должны быть тёмными */
+/* ===== СВЕТЛАЯ ТЕМА (полная перезапись) ===== */
 body.light-theme {
     --glass-text: #1a1a2e;
     --glass-text-light: #4a4a6e;
+    /* --- Цвета для текста и фона карточек --- */
+    .text-white, .text-white-50, .question-card h5, .question-card h6, .lecture-item h6, .test-item h6, .subject-group h4, .section-group h5, .filter-card-header h5, .filter-card-body .form-label, .empty-state h5, .empty-state p, .code-item .text-white, .teacher-user-info span, .teacher-nav-tab, .timer, .question-counter, .question-nav-item, .result-card .text-white, .stats-card h4, .stats-card p, .detail-card h5, .modal-title, .modal-body .text-white, .teacher-card-header h4, .card-header h4
+
+{
+    color: #1a1a2e !important;
+}
+
+.question-card,
+.lecture-card,
+.test-card,
+.result-card,
+.teacher-card,
+.filter-card,
+.card,
+.subject-group,
+.stats-card,
+.detail-card {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.filter-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1a1a2e !important;
+}
+
+    .filter-btn:hover {
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+.teacher-nav-tab {
+    color: #4a4a6e !important;
+}
+
+    .teacher-nav-tab.active {
+        background: var(--primary-gradient);
+        color: white !important;
+    }
+
+.timer-container {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.timer {
+    color: #1a1a2e !important;
+}
+
+    .timer.warning,
+    .timer.critical {
+        color: inherit;
+    }
+
+.availability-badge,
+.new-badge {
+    color: white !important;
+}
+
+.teacher-search-input,
+.search-input {
+    background: rgba(0, 0, 0, 0.05);
+    color: #1a1a2e;
+}
+
+    .teacher-search-input::placeholder,
+    .search-input::placeholder {
+        color: rgba(0, 0, 0, 0.5);
+    }
+
+/* ===== ПОЛЯ ВВОДА (ГЛАВНОЕ ИСПРАВЛЕНИЕ) ===== */
+.form-control,
+.question-text,
+.answer-text,
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+textarea,
+select.form-control,
+select.form-select,
+.editor-content,
+.question-text-area {
+    background-color: white !important;
+    color: #1a1a2e !important;
+    border-color: #ccc !important;
+}
+
+    .form-control::placeholder,
+    .question-text::placeholder,
+    .answer-text::placeholder,
+    textarea::placeholder {
+        color: #999 !important;
+    }
+
+    /* Автозаполнение в светлой теме */
+    .form-control:-webkit-autofill,
+    .form-control:-webkit-autofill:focus {
+        -webkit-text-fill-color: #1a1a2e !important;
+        -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+        background-color: white !important;
+    }
+
+/* Модальные окна */
+.modal-body .form-control,
+.modal-body input,
+.modal-body textarea {
+    background-color: white !important;
+    color: #1a1a2e !important;
+}
+
+/* Выпадающие списки (select) */
+select.form-control,
+select.form-select,
+.teacher-card-body select,
+.modal-body select,
+.edit-test-container select,
+.question-card select {
+    background-color: white !important;
+    color: #1a1a2e !important;
+    border: 1px solid #ccc !important;
+}
+
+    select.form-control option,
+    select.form-select option,
+    .teacher-card-body select option,
+    .modal-body select option {
+        background-color: white !important;
+        color: #1a1a2e !important;
+    }
+
+        select.form-control option:hover,
+        select.form-select option:hover,
+        .teacher-card-body select option:hover,
+        .modal-body select option:hover {
+            background-color: #e9ecef !important;
+            color: #1a1a2e !important;
+        }
+
+}
+
+{
+    /* ... существующие стили ... */
+    /* === ИСПРАВЛЕНИЕ ДЛЯ ПОЛЕЙ ВВОДА === */
+    .form-control, .question-text, .answer-text, input:not([type="checkbox"]):not([type="radio"]), textarea, select.form-control, .editor-content, .question-text-area
+
+{
+    background-color: white !important;
+    color: #1a1a2e !important;
+    border-color: #ccc !important;
+}
+
+.form-control::placeholder,
+.question-text::placeholder,
+.answer-text::placeholder,
+textarea::placeholder {
+    color: #999 !important;
+}
+
+/* Для полей, которые могут быть в модальных окнах */
+.modal-body .form-control,
+.modal-body input,
+.modal-body textarea {
+    background-color: white !important;
+    color: #1a1a2e !important;
+}
+
+/* Если есть поля с autofill, которые подсвечиваются */
+.form-control:-webkit-autofill,
+.form-control:-webkit-autofill:focus {
+    -webkit-text-fill-color: #1a1a2e !important;
+    -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+    background-color: white !important;
+}
+
+}
 }
 
     body.light-theme .text-white,

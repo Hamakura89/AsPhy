@@ -162,7 +162,7 @@
             } else alert(result.message);
         });
 
-        function applyTheme(theme, primaryColor) {
+               function applyTheme(theme, primaryColor) {
             const root = document.documentElement;
             if (theme === 'light') {
                 root.style.setProperty('--background', '#f0f2f5');
@@ -170,12 +170,14 @@
                 root.style.setProperty('--glass-text-light', '#4a4a6e');
                 root.style.setProperty('--glass-bg', 'rgba(255,255,255,0.9)');
                 root.style.setProperty('--glass-border', 'rgba(0,0,0,0.1)');
+                document.body.classList.add('light-theme');  // ← добавляем класс
             } else {
                 root.style.setProperty('--background', '#0a0a1f');
                 root.style.setProperty('--glass-text', '#FFFFFF');
                 root.style.setProperty('--glass-text-light', 'rgba(255,255,255,0.7)');
                 root.style.setProperty('--glass-bg', 'rgba(13,11,28,0.95)');
                 root.style.setProperty('--glass-border', 'rgba(217,170,255,0.15)');
+                document.body.classList.remove('light-theme'); // ← удаляем класс
             }
             let primaryGrad = '';
             switch(primaryColor) {
